@@ -5,9 +5,9 @@ OPTIONS = -c
 # Name of the executable
 EXECUTABLE = myshell
 # Object files
-OBJECTS = main.o
+OBJECTS = main.o global.o prompt.o
 # Source files
-SOURCES	= main.c
+SOURCES	= main.c global.c prompt.c
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -22,9 +22,9 @@ all: $(OBJECTS)
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE) *.gch
 
-%.o: %.c
+%.o: %.c global.h
 	$(CC) $(OPTIONS) $<
 
 # Dependencies
-main.o:	main.h
-
+main.o:	global.o prompt.o prompt.h
+prompt.o: prompt.h

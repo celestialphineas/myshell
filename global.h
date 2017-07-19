@@ -10,6 +10,7 @@
 // Exit code
 #define SUCCESS_                0
 #define MEM_ALLOC_ERR_          2
+#define INIT_ERR_               3
 #define HOSTNAME_NOT_FOUND_     5
 #define ENVIRONMENT_FAULT_      6
 
@@ -29,14 +30,15 @@ void init();
 // PWD_COLOR        Color of the pwd,
 //                  blue by default
 // DEFAULT_COLOR    Default escape
-#define USER_COLOR      "\033[32m"
-#define HOSTNAME_COLOR  "\033[32m"
-#define PWD_COLOR       "\033[34m"
+#define USER_COLOR      "\033[32;1m"
+#define HOSTNAME_COLOR  "\033[32;1m"
+#define PWD_COLOR       "\033[34;1m"
 #define DEFAULT_COLOR   "\033[0m"
 
 #define HOSTNAME_PATH   "/etc/hostname"
 // Max lengths of some variables
 #define MAX_PATH_LEN        4096
+#define MAX_PROMPT_LEN      16384
 #define MAX_HOSTNAME_LEN    64
 
 // Hostname of the machine, initialized when the shell is started

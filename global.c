@@ -20,6 +20,8 @@ char *get_hostname()
     if(fd_hostname == -1) exit(HOSTNAME_NOT_FOUND_);
     // Read in the hostname
     read(fd_hostname, (void*)hostname, MAX_HOSTNAME_LEN);
+    // Change the line feed to 0
+    hostname[strlen(hostname) - 1] = 0;
     // Return the hostname
     return hostname;
 }
