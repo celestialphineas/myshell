@@ -18,4 +18,6 @@ Shift support
 
 ## TODO
 
-signals, handle the keyboard interrupt, etc...
+- [ ] signals, handle the keyboard interrupt, etc...
+- [ ] Hash map find
+- [ ] Test hash map
