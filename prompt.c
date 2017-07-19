@@ -61,9 +61,18 @@ char *get_ps1()
     pwd = get_pwd_replaced();
     // Write PS1
     sprintf(PS1,
-        USER_COLOR "%s" HOSTNAME_COLOR "@%s"
-        DEFAULT_COLOR ":" PWD_COLOR "%s"
-        DEFAULT_COLOR "\nmyshell> ",
+        // Username
+        USER_COLOR "%s"
+        // Hostname
+        HOSTNAME_COLOR "@%s"
+        // Default colon
+        DEFAULT_COLOR ":"
+        // PWD
+        PWD_COLOR "%s" "\n"
+        // Prompt, "myshell> " by default
+        // See global.h for definition
+        PROMPT_COLOR PROMPT_STRING
+        DEFAULT_COLOR,
         user, HOSTNAME, pwd);
     return PS1;
 }
