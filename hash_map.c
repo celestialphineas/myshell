@@ -71,6 +71,8 @@ int delete_entry(HashMap *this_, const char *key_)
             // Delete the entry value, and flag the pointer to NULL
             if(this_->map[index].value) free(this_->map[index].value);
             this_->map[index].value = NULL;
+            // Set the size 0
+            this_->map[index].size = 0;
             // The key is reserved
             // Return success
             return 1;
@@ -92,7 +94,7 @@ int insert_entry(
     // Meets hash failure
     if(hash_value == -1) return 0;
     // If the table is half full, rehash
-    if(this_->entry_count > this_->size/2)
+    if((this_->entry_count + 1)*2 > this_->size)
     {
         rehash_success = rehash(this_);
         // Return failure if rehash fails
@@ -128,6 +130,19 @@ int insert_entry(
             this_->map[index].value = malloc(size_);
             if(!this_->map[index].value) return 0;
             memcpy(this_->map[index].value, value_, size_);
+            this_->map[index].size = size_;
+            return 1;
+        }
+        // Indentical keys, override the old
+        else if(!strcmp(this_->map[index].key, key_))
+        {
+            if(this_->map[index].value)
+                free(this_->map[index].value);
+            this_->map[index].value = NULL;
+            this_->map[index].value = malloc(size_);
+            if(!this_->map[index].value) return 0;
+            memcpy(this_->map[index].value, value_, size_);
+            this_->map[index].size = size_;
             return 1;
         }
     }
@@ -201,6 +216,7 @@ int rehash(HashMap *this_)
     // Replace the old one.
     free(this_->map);
     this_->map = temp_map;
+    this_->size = new_size;
     return 1;
 }
 
