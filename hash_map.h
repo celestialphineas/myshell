@@ -71,6 +71,13 @@ typedef struct
 // HashFunc is the typename of a hash function
 // This slot requires a hash function
 HashMap *create_hash_map(unsigned size_scale, HashFunc);
+// Destruct the hash map, destructor
+// Default return value is NULL
+// Notes that this function also destructs itself!
+// Handle with care!
+// Recommanded usage:
+// hash_map = delete_hash_map(hash_map);
+HashMap *delete_hash_map(HashMap *this_);
 // The delete_entry is lazy.
 // The behaviour is as follows:
 //      Minus one on the entry_count.
@@ -83,11 +90,15 @@ HashMap *create_hash_map(unsigned size_scale, HashFunc);
 int delete_entry(HashMap *this_, const char *key_);
 // Insert a key to the hash map
 // Deep copy for both the key and the value
+// The default behavior is in a overriding manner
 int insert_entry(
     HashMap *this_, const char *key_, void *value_, unsigned size_);
 // Rehash
 // The rehashed hash map is twice as big
 int rehash(HashMap *this_);
+// Find
+// The result is directly the hash entry, but read only.
+const HashEntry *find_entry(HashMap *this_, const char *key_);
 
 // BKDR Hash Function
 // This function does not return the remainder

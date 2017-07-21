@@ -14,8 +14,12 @@ void init_entry(HashEntry *this_)
 void destruct_entry(HashEntry *this_)
 {
     if(!this_) return;
+    this_->occupied = 0;
+    this_->size = 0;
     if(this_->key) free(this_->key);
+    this_->key = NULL;
     if(this_->value) free(this_->value);
+    this_->value = NULL;
     return;
 }
 
@@ -40,6 +44,23 @@ HashMap *create_hash_map(unsigned size_scale, HashFunc hash_function_)
     }
     new_hash_map->hash_function = hash_function_;
     return new_hash_map;
+}
+
+HashMap *delete_hash_map(HashMap *this_)
+{
+    int i;
+    if(!this_) return NULL;
+    if(!this_->map)
+    {
+        for(i = 0; i < this_->size; i++)
+        {
+            destruct_entry(this_->map + i);
+        }
+        free(this_->map);
+    }
+    this_->map = NULL;
+    free(this_);
+    return NULL;
 }
 
 int delete_entry(HashMap *this_, const char *key_)
@@ -218,6 +239,31 @@ int rehash(HashMap *this_)
     this_->map = temp_map;
     this_->size = new_size;
     return 1;
+}
+
+const HashEntry *find_entry(HashMap *this_, const char *key_)
+{
+    int i;
+    int hash_value;
+    // Meets NULL arguments
+    if(!this_) return NULL;
+    if(!key_)   return NULL;
+    // Compute hash value
+    hash_value = this_->hash_function(key_);
+    // Meets hash failure
+    if(hash_value == -1) return 0;
+    for(i = 0; i < this_->size; i++)
+    {
+        // Square detection
+        int index = (hash_value + i * i) % this_->size;
+        // Not found, meets a virgin
+        if(!this_->map[index].occupied && !this_->map[index].key)
+            return 0;
+        // Found
+        if(this_->map[index].occupied && !strcmp(this_->map[index].key, key_))
+            return this_->map + index;
+    }
+    return NULL;
 }
 
 int BKDR_hash(const char *str)

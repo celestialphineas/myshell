@@ -19,5 +19,5 @@ Shift support
 ## TODO
 
 - [ ] signals, handle the keyboard interrupt, etc...
-- [ ] Hash map find
-- [ ] Test hash map
+- [x] Hash map find
+- [x] Test hash map
