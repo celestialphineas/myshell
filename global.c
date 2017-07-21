@@ -1,13 +1,43 @@
 #include "global.h"
 
-char *HOSTNAME;
+// Concrete global properties
+int MYSHELL_PID;
+int MYSHELL_TERM_IN;
+int MYSHELL_TERM_OUT;
+int MYSHELL_TERM_ERR;
 char *MYSHELL_PATH;
+char *HOSTNAME;
+boolean INTERACTIVE_MODE;
+struct termios TERM_ATTR;
+int GLOBAL_ARGC;
+char **GLOBAL_ARGV;
+int MYSHELL_ARG_OFFSET;
 
 // Static prototypes
+static void handle_myshell_signals();
 static char *create_hostname();
+static void grab_term_ctrl();
 
 void init()
 {
+    // Initialize terminal file descriptors
+    MYSHELL_TERM_IN = STDIN_FILENO;
+    MYSHELL_TERM_OUT = STDOUT_FILENO;
+    MYSHELL_TERM_ERR = STDERR_FILENO;
+
+    // If the standard input of the program is not a tty,
+    // then assume that the program must not be running in interactive mode
+    if(!isatty(MYSHELL_TERM_IN)) INTERACTIVE_MODE = false;
+
+    // Handle myshell signals
+    handle_myshell_signals();
+
+    // Initialize myshell pid
+    if(INTERACTIVE_MODE)
+        MYSHELL_PID = getpid();
+    // If failed to get the pid
+    if(MYSHELL_PID < 0)  exit(PID_FAILURE_);
+
     // Initialize myshell path
     // First get the initial pwd
     char *init_pwd = get_pwd();
@@ -21,7 +51,26 @@ void init()
     // Get the hostname
     HOSTNAME = create_hostname();
     
+    // Grab control of the terminal
+    grab_term_ctrl();
+
     return;
+}
+
+static void handle_myshell_signals()
+{
+    // Take over the signals if myshell is running in interactive mode
+    if(INTERACTIVE_MODE)
+    {
+        // Todo: Handle this:
+        signal(SIGINT, SIG_IGN);
+        // These should not be handled
+        signal(SIGQUIT, SIG_IGN);
+        signal(SIGTSTP, SIG_IGN);
+        signal(SIGTTIN, SIG_IGN);
+        signal(SIGTTOU, SIG_IGN);
+        signal(SIGCHLD, SIG_IGN);
+    }
 }
 
 static char *create_hostname()
@@ -39,6 +88,16 @@ static char *create_hostname()
     hostname[strlen(hostname) - 1] = 0;
     // Return the hostname
     return hostname;
+}
+
+static void grab_term_ctrl()
+{
+    // Take over the terminal if myshell is running in interactive mode
+    if(INTERACTIVE_MODE)
+    {
+        tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+        tcgetattr(MYSHELL_TERM_IN, &TERM_ATTR);
+    }
 }
 
 char *get_hostname()

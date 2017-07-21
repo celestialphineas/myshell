@@ -5,9 +5,11 @@ OPTIONS = -c
 # Name of the executable
 EXECUTABLE = myshell
 # Object files
-OBJECTS = main.o global.o prompt.o read_input.o
+OBJECTS = main.o global.o prompt.o read_input.o doc_display.o
 # Source files
-SOURCES	= main.c global.c prompt.c read_input.c
+SOURCES	= main.c global.c prompt.c read_input.c doc_display.c
+# Headers
+HEADERS = global.h prompt.h read_input.h doc_display.h
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -28,6 +30,7 @@ clean:
 	$(CC) $(OPTIONS) $<
 
 # Dependencies
-main.o:	global.o read_input.o read_input.h
+main.o:	global.o read_input.o read_input.h doc_display.o doc_display.h
 prompt.o: prompt.h
 read_input.o: global.o read_input.h prompt.h
+doc_display.o: doc_display.h

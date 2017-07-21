@@ -9,12 +9,23 @@ table.
 
 Shift support
 
+## Something I have learnt
+
+- The essence of shebang
+- 
+
 ## A list of shell variables
 
 - HOSTNAME
 - MYSHELL_PATH
 - PS1
 - PS2
+
+## Reminders
+
+Don't forget the input command line should be an array of int, for you might
+need to handle the EOF (Ctrl + D)... Or there are probably other methods to
+handle this.
 
 ## TODO
 
@@ -24,3 +35,4 @@ Shift support
 - [ ] Parser
 - [ ] Evaluate the tokens
 - [ ] Data structure for commands
+- [ ] Signal binding of SIGINT

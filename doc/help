@@ -1,0 +1,7 @@
+myshell
+Usage: myshell [options] script ...
+GNU options:
+        --help      Show this help file
+        --version   Show version
+Shell options:
+        -i          Run in interactive mode

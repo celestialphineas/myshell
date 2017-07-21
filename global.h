@@ -10,6 +10,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <termios.h>
 
 // Boolean definition
 // ==================
@@ -21,10 +23,12 @@ typedef int boolean;
 // ==========
 // The exit codes definitions end with an extra underscore
 #define SUCCESS_                0
-#define MEM_ALLOC_ERR_          2
-#define INIT_ERR_               3
-#define HOSTNAME_NOT_FOUND_     5
-#define ENVIRONMENT_FAULT_      6
+#define MYSHELL_CALL_ERR_       2
+#define MEM_ALLOC_ERR_          3
+#define INIT_ERR_               4
+#define PID_FAILURE_            5
+#define HOSTNAME_NOT_FOUND_     6
+#define ENVIRONMENT_FAULT_      7
 
 // Prompt style
 // ============
@@ -58,10 +62,35 @@ typedef int boolean;
 
 // Hostname path
 #define HOSTNAME_PATH   "/etc/hostname"
-// Hostname of the machine, initialized when the shell is started
-extern char *HOSTNAME;
+
+// Global properties
+// =================
+// myshell pid
+extern int MYSHELL_PID;
+// myshell terminal file descriptors
+extern int MYSHELL_TERM_IN;     // stdin
+extern int MYSHELL_TERM_OUT;    // stdout
+extern int MYSHELL_TERM_ERR;    // stderr
 // myshell path, i.e. initial pwd
 extern char *MYSHELL_PATH;
+// Hostname of the machine, initialized when the shell is started
+extern char *HOSTNAME;
+// Terminal attributes
+extern struct termios TERM_ATTR;
+// Global arguments
+extern int GLOBAL_ARGC;
+extern char **GLOBAL_ARGV;
+// MYSHELL_ARG_OFFSET defines the argument offset
+// Negative indicates that there are no arguments passed to the session
+// Otherwise, GLOBAL_ARGV[MYSHELL_ARG_OFFSET] and the arguments followed by
+// this are passed as arguments $0 ~ ${n}
+// Similar to the POSIX standard, $0 is either the bash path (interactive mode)
+// or the script path (script mode)
+extern int MYSHELL_ARG_OFFSET;
+
+// myshell flags
+// =============
+extern boolean INTERACTIVE_MODE;
 
 // Functions
 // =========
