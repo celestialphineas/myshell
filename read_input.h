@@ -17,10 +17,10 @@
 
 // This function gets input from stdin in a blocking manner
 // With the prompt of PS1
-char *get_command();
+char *prompt1_read();
 // And this function gets continued input
 // With the prompt of PS2
-char *get_continued_command();
+char *prompt2_read();
 // Give the status of a command line
 int command_status(char *command);
 

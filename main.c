@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
     // The initialization cannot be removed
     init();
-    get_command();
-    get_continued_command();
+    prompt1_read();
+    prompt2_read();
     return 0;
 }

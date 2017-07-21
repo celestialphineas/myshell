@@ -21,3 +21,6 @@ Shift support
 - [ ] signals, handle the keyboard interrupt, etc...
 - [x] Hash map find
 - [x] Test hash map
+- [ ] Parser
+- [ ] Evaluate the tokens
+- [ ] Data structure for commands

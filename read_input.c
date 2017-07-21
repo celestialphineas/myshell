@@ -1,7 +1,7 @@
 // Implemetation of the command line input fcuntions
 #include "read_input.h"
 
-char *get_command()
+char *prompt1_read()
 {
     char *result = NULL;
     size_t command_length = 0;
@@ -11,7 +11,7 @@ char *get_command()
     return result;
 }
 
-char *get_continued_command()
+char *prompt2_read()
 {
     char *result = NULL;
     size_t command_length = 0;
