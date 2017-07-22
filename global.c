@@ -13,10 +13,13 @@ int GLOBAL_ARGC;
 char **GLOBAL_ARGV;
 int MYSHELL_ARG_OFFSET;
 
+extern char** environ;
+
 // Static prototypes
 static void handle_myshell_signals();
 static char *create_hostname();
 static void grab_term_ctrl();
+static void push_environ_to_var_table();
 
 void init()
 {
@@ -53,6 +56,10 @@ void init()
     
     // Grab control of the terminal
     grab_term_ctrl();
+
+    // Push the environment variables to the variable table
+    init_var_table();
+    push_environ_to_var_table();
 
     return;
 }
@@ -98,6 +105,36 @@ static void grab_term_ctrl()
         tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
         tcgetattr(MYSHELL_TERM_IN, &TERM_ATTR);
     }
+}
+
+static void push_environ_to_var_table()
+{
+    char key_buffer[32];
+    char **p = environ;
+    while(*p)
+    {
+        int equal_index = 0;
+        int rest;
+        Variable var;
+        var.elec = 1;
+        var.elev = (char**)malloc(sizeof(char*));
+        if(!var.elev) exit(MEM_ALLOC_ERR_);
+        while((*p)[equal_index] != '=')
+        {
+            if(!(*p)[equal_index]) break;
+            equal_index++;
+        }
+        memcpy(key_buffer, *p, equal_index);
+        key_buffer[equal_index] = 0;
+        rest = strlen(*p) - equal_index;
+        *(var.elev) = (char*)malloc(rest * sizeof(char));
+        if(!*var.elev) exit(MEM_ALLOC_ERR_);
+        memcpy(*var.elev, *p + equal_index + 1, rest);
+        (*var.elev)[rest] = 0;
+        update_variable(key_buffer, &var);
+        p++;
+    }
+    return;
 }
 
 char *get_hostname()

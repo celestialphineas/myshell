@@ -18,7 +18,7 @@
 #define SUCCESS_                0
 #endif
 #ifndef MEM_ALLOC_ERR_
-#define MEM_ALLOC_ERR_          2
+#define MEM_ALLOC_ERR_          3
 #endif
 
 // hash function type definition

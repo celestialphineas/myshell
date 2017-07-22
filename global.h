@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
+#include "var_table.h"
 
 // Boolean definition
 // ==================
