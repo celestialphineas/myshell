@@ -20,7 +20,6 @@ static void handle_myshell_signals();
 static char *create_hostname();
 static void grab_term_ctrl();
 static void push_environ_to_var_table();
-static void push_arg_to_var_table();
 
 void init()
 {
@@ -139,7 +138,7 @@ static void push_environ_to_var_table()
     return;
 }
 
-static void push_arg_to_var_table()
+void push_arg_to_var_table()
 {
     int i = 0;
     char key_buffer[4];

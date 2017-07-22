@@ -99,6 +99,10 @@ extern boolean INTERACTIVE_MODE;
 // Initialization
 // --------------
 void init();
+// This function is used in initialization.
+// It can also be used to update the variable table
+// When a shift command is called
+void push_arg_to_var_table();
 // Get shell variables
 // -------------------
 // Implemented in global.c
