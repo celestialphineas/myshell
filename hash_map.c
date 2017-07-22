@@ -266,6 +266,31 @@ const HashEntry *find_entry(HashMap *this_, const char *key_)
     return NULL;
 }
 
+const HashEntry *forced_find_entry(HashMap *this_, const char *key_)
+{
+    int i;
+    int hash_value;
+    // Meets NULL arguments
+    if(!this_) return NULL;
+    if(!key_)   return NULL;
+    // Compute hash value
+    hash_value = this_->hash_function(key_);
+    // Meets hash failure
+    if(hash_value == -1) return 0;
+    for(i = 0; i < this_->size; i++)
+    {
+        // Square detection
+        int index = (hash_value + i * i) % this_->size;
+        // Not found, meets a virgin
+        if(!this_->map[index].occupied && !this_->map[index].key)
+            return 0;
+        // Found
+        if(!strcmp(this_->map[index].key, key_))
+            return this_->map + index;
+    }
+    return NULL;
+}
+
 int BKDR_hash(const char *str)
 {
     // 31 131 1313 13131 131313
@@ -278,7 +303,7 @@ int BKDR_hash(const char *str)
     // If the string points NULL
     if(!str) return -1;
     // Compute the hash value
-    while(*ch && (char*)ch - (char*)str < 64)
+    while(*ch && (char*)ch - (char*)str < upper)
     {
         hash = hash * magic + (*ch++);
     }

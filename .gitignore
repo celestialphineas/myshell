@@ -1,6 +1,8 @@
 .vscode
 test
 myshell
+test_file
+test_file/*
 *.test.*
 *.o
 *.obj

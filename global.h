@@ -29,6 +29,7 @@ typedef int boolean;
 #define PID_FAILURE_            5
 #define HOSTNAME_NOT_FOUND_     6
 #define ENVIRONMENT_FAULT_      7
+#define VAR_HASH_TABLE_ERR_     8
 
 // Prompt style
 // ============

@@ -5,11 +5,14 @@ OPTIONS = -c
 # Name of the executable
 EXECUTABLE = myshell
 # Object files
-OBJECTS = main.o global.o prompt.o read_input.o doc_display.o
+OBJECTS = main.o global.o prompt.o read_input.o doc_display.o var_table.o\
+hash_map.o
 # Source files
-SOURCES	= main.c global.c prompt.c read_input.c doc_display.c
+SOURCES	= main.c global.c prompt.c read_input.c doc_display.c var_table.c\
+hash_map.c
 # Headers
-HEADERS = global.h prompt.h read_input.h doc_display.h
+HEADERS = global.h prompt.h read_input.h doc_display.h var_table.h\
+hash_map.h
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -34,3 +37,5 @@ main.o:	global.o read_input.o read_input.h doc_display.o doc_display.h
 prompt.o: prompt.h
 read_input.o: global.o read_input.h prompt.h
 doc_display.o: doc_display.h
+var_table.o: var_table.h hash_map.o
+hash_map.o: hash_map.h

@@ -35,4 +35,8 @@ handle this.
 - [ ] Parser
 - [ ] Evaluate the tokens
 - [ ] Data structure for commands
-- [ ] Signal binding of SIGINT
+- [x] Signal binding of SIGINT
+
+# Not fully implemented
+
+- parser

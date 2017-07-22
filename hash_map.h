@@ -99,12 +99,14 @@ int rehash(HashMap *this_);
 // Find
 // The result is directly the hash entry, but read only.
 const HashEntry *find_entry(HashMap *this_, const char *key_);
+// Forced find
+// Also find the unoccupied but dirty entries
+const HashEntry *forced_find_entry(HashMap *this_, const char *key_);
 
 // BKDR Hash Function
 // This function does not return the remainder
 // Only the hash value of the string is computed
 // Return -1 if failed
 int BKDR_hash(const char *str);
-
 
 #endif
