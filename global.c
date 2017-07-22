@@ -20,6 +20,7 @@ static void handle_myshell_signals();
 static char *create_hostname();
 static void grab_term_ctrl();
 static void push_environ_to_var_table();
+static void push_arg_to_var_table();
 
 void init()
 {
@@ -60,7 +61,8 @@ void init()
     // Push the environment variables to the variable table
     init_var_table();
     push_environ_to_var_table();
-
+    // Push arguments to the variable table
+    push_arg_to_var_table();
     return;
 }
 
@@ -133,6 +135,32 @@ static void push_environ_to_var_table()
         (*var.elev)[rest] = 0;
         update_variable(key_buffer, &var);
         p++;
+    }
+    return;
+}
+
+static void push_arg_to_var_table()
+{
+    int i = 0;
+    char key_buffer[4];
+    char **p = GLOBAL_ARGV + MYSHELL_ARG_OFFSET;
+    while(p < GLOBAL_ARGV + GLOBAL_ARGC)
+    {
+        Variable var;
+        var.elec = 1;
+        var.elev = (char**)malloc(sizeof(char*));
+        if(!var.elev) exit(MEM_ALLOC_ERR_);
+        *var.elev = (char*)malloc((strlen(*p) + 1) * sizeof(char));
+        if(!*var.elev) exit(MEM_ALLOC_ERR_);
+        strcpy(*var.elev, *p);
+        sprintf(key_buffer, "%d", i++);
+        update_variable(key_buffer, &var);
+        p++;
+    }
+    for(i = GLOBAL_ARGC - MYSHELL_ARG_OFFSET; i < GLOBAL_ARGC; i++)
+    {
+        sprintf(key_buffer, "%d", i);
+        delete_variable(key_buffer);
     }
     return;
 }
