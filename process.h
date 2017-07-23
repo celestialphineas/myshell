@@ -2,6 +2,8 @@
 // =======
 // Author: Celestial Phineas @ ZJU
 //         (Yehang YIN)
+// This file implements the process group control and launch
+// The data structure to describe the process control is given
 #ifndef CELPHI_PROCESS_H
 #define CELPHI_PROCESS_H
 #include "global.h"
@@ -36,6 +38,9 @@ typedef enum
 // fd_stdin     - File descriptor for stdin
 // fd_stdout    - File descriptor for stdout
 // fd_stderr    - File descriptor for stderr
+// append_out   - Output mode: append or 
+//
+// Head of this linked list is the process group leader.
 typedef struct Process
 {
     struct Process *next;
@@ -53,6 +58,7 @@ typedef struct Process
     boolean append_out;
 } Process;
 
+// ProcessPipeline is a series of processes
 typedef Process *ProcessPipeline;
 
 Process *create_process(int argc, char **argv,
@@ -62,9 +68,13 @@ Process *create_process(int argc, char **argv,
     int in_file_fd, int out_file_fd, int err_file_fd);
 
 typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
+
+// Launch/resume the process pipeline
 int launch_process_pipeline(ProcessPipeline, boolean foreground);
 
-void fg_job(Process*);
-void bg_job(Process*);
+void fg_process_group(Process*);
+void bg_process_group(Process*);
+
+Process *destruct_process_pipeline(ProcessPipeline);
 
 #endif

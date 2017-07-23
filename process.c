@@ -269,9 +269,9 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
                 if(INTERACTIVE_MODE)
                 {
                     if(foreground)
-                        fg_job(pl);
+                        fg_process_group(pl);
                     else
-                        bg_job(pl);
+                        bg_process_group(pl);
                 }
                 // Wait until the child process is done
                 {
@@ -290,6 +290,7 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
             else exit(PROCESS_CREATE_ERR_);
         }
         // Put the shell back to the foreground
+        // Grab the terminal control again
         tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
         // Test whether run the next command or not
         if(p->pipeline_discipline == NEXT_IF_SUCCUSS && p->status_value != 0)
@@ -312,15 +313,47 @@ static void set_signals_active()
     return;
 }
 
-void fg_job(Process *pl)
+void fg_process_group(Process *pl)
 {
     if(!pl) return;
     // Get control of the terminal and run as the foreground process
     tcsetpgrp(MYSHELL_TERM_IN, pl->pgid);
 }
 
-void bg_job(Process *pl)
+void bg_process_group(Process *pl)
 {
     if(!pl) return;
+    // Still let the shell hold the terminal
     tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+}
+
+Process *destruct_process_pipeline(ProcessPipeline pl)
+{
+    if(pl->next) 
+        pl->next = destruct_process_pipeline(pl->next);
+    if(pl->argv)
+    {
+        int i;
+        for(i = 0; i < pl->argc; i++)
+        {
+            if(pl->argv[i]) free(pl->argv[i]);
+            pl->argv[i] = NULL;
+        }
+        free(pl->argv);
+        pl->argv = NULL;
+    }
+    // Clean up the files
+    if(pl->fd_stdin != STDIN_FILENO
+        || pl->fd_stdin != STDOUT_FILENO
+        || pl->fd_stdin != STDERR_FILENO)
+            close(pl->fd_stdin);
+    if(pl->fd_stdout != STDIN_FILENO
+        || pl->fd_stdout != STDOUT_FILENO
+        || pl->fd_stdout != STDERR_FILENO)
+            close(pl->fd_stdout);
+    if(pl->fd_stderr != STDIN_FILENO
+        || pl->fd_stderr != STDOUT_FILENO
+        || pl->fd_stderr != STDERR_FILENO)
+            close(pl->fd_stderr);
+    return NULL;
 }
