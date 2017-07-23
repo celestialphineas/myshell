@@ -1,6 +1,8 @@
 // Implementation of process launch functions
 #include "process.h"
 
+static void set_signals_active();
+
 Process *create_process(
     int argc_, char **argv_,
     boolean is_pipe_, 
@@ -170,26 +172,38 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
     Process *p;
     pid_t forked;
     pid_t group_id;
+    if(!pl) return COMPLETED;
     if(pl->pgid != 0) group_id = pl->pgid;
     // Traverse all the process in the process pipeline
     for(p = pl; p; p = p->next)
     {
         // Handle the completed and stopped jobs
+        // The process is terminated, but the pipeline is not finished
         if(
+            // The process is finished
             p->process_state == COMPLETED
                 && (
+                    // And the process exit status allows it to execute the next
                     !(p->pipeline_discipline == NEXT_IF_SUCCUSS && p->status_value != 0)
                     || !(p->pipeline_discipline == NEXT_IF_FAILURE && p->status_value == 0)
                 )
         )
+        {
+            // This is the statement of the if clause
             continue;
+        }
+        // Meet a stopped process pipeline
         else if(p->process_state == STOPPED)
         {
             pid_t temp_pid;
             // Resume a hanging process
-            kill(p->pid, SIGCONT);
+            if(kill(p->pid, SIGCONT) < 0)
+            {
+                print_myshell_err("Unable to continue job!");
+                return STOPPED;
+            }
             // Wait
-            temp_pid = waitpid(forked, &(p->status_value), WUNTRACED);
+            temp_pid = waitpid(forked, &(p->status_value), WNOHANG);
             if(temp_pid == -1) // That is to say the process is stopped
             {
                 p->process_state = STOPPED;
@@ -198,6 +212,7 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
             else
                 p->process_state = COMPLETED;
         }
+        // The process is not startup yet
         else
         {
             // Handle pipe, create a pipe file
@@ -224,19 +239,7 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
                 if(p == pl) // Process group leader
                     group_id = getpid();
                 setpgid(getpid(), group_id);
-                // Gain control of the terminal and signals
-                if(INTERACTIVE_MODE)
-                {
-                    if(foreground)
-                        tcsetpgrp(MYSHELL_TERM_IN, group_id);
-                    // Signals
-                    signal(SIGINT, SIG_DFL);
-                    signal(SIGQUIT, SIG_DFL);
-                    signal(SIGTSTP, SIG_DFL);
-                    signal(SIGTTIN, SIG_DFL);
-                    signal(SIGTTOU, SIG_DFL);
-                    signal(SIGCHLD, SIG_DFL);
-                }
+                set_signals_active();
                 // Set the standard input and output for the new process
                 dup2(p->fd_stdin, STDIN_FILENO);
                 dup2(p->fd_stdout, STDOUT_FILENO);
@@ -253,7 +256,8 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
                 // Make sure that the forked process will finish
                 exit(1);
             }
-            else if(forked > 0) // In the parent process
+            // In the parent process
+            else if(forked > 0)
             {
                 // Handle the pid and pgid first
                 if(p == pl) // Process group leader
@@ -261,6 +265,14 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
                 p->pid = forked;
                 p->pgid = group_id;
                 p->process_state = RUNNING;
+                // Change control of the terminal and signals
+                if(INTERACTIVE_MODE)
+                {
+                    if(foreground)
+                        fg_job(pl);
+                    else
+                        bg_job(pl);
+                }
                 // Wait until the child process is done
                 {
                     pid_t temp_pid;
@@ -286,4 +298,29 @@ int launch_process_pipeline(ProcessPipeline pl, boolean foreground)
             break;
     }
     return COMPLETED;
+}
+
+static void set_signals_active()
+{
+
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
+    signal(SIGTTIN, SIG_DFL);
+    signal(SIGTTOU, SIG_DFL);
+    signal(SIGCHLD, SIG_DFL);
+    return;
+}
+
+void fg_job(Process *pl)
+{
+    if(!pl) return;
+    // Get control of the terminal and run as the foreground process
+    tcsetpgrp(MYSHELL_TERM_IN, pl->pgid);
+}
+
+void bg_job(Process *pl)
+{
+    if(!pl) return;
+    tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
 }

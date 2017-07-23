@@ -4,6 +4,7 @@ myshell
 test_file
 test_file/*
 *.test.*
+*.old.*
 *.o
 *.obj
 *.gch

@@ -64,4 +64,7 @@ Process *create_process(int argc, char **argv,
 typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
 int launch_process_pipeline(ProcessPipeline, boolean foreground);
 
+void fg_job(Process*);
+void bg_job(Process*);
+
 #endif
