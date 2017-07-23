@@ -11,7 +11,8 @@ typedef enum
 {
     UNSTARTED = 0,
     COMPLETED = 1,
-    STOPPED = 2
+    STOPPED = 2,
+    RUNNING = 3
 } ProcessState;
 
 typedef enum
@@ -53,5 +54,14 @@ typedef struct Process
 } Process;
 
 typedef Process *ProcessPipeline;
+
+Process *create_process(int argc, char **argv,
+    boolean is_pipe_, boolean append_out_,
+    PipelineDiscipline pipeline_discipline_,
+    char *in_file, char *out_file, char *err_file,
+    int in_file_fd, int out_file_fd, int err_file_fd);
+
+typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
+int launch_process_pipeline(ProcessPipeline, boolean foreground);
 
 #endif

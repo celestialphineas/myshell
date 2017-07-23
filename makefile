@@ -4,12 +4,18 @@ CC = gcc
 OPTIONS = -c
 # Name of the executable
 EXECUTABLE = myshell
+# Name of the test
+TESTEXEC = test
 # Object files
-OBJECTS = main.o global.o prompt.o read_input.o message.o var_table.o\
+OBJECTS = global.o prompt.o read_input.o message.o var_table.o\
 hash_map.o process.o
+# Main object
+MAINOBJ = main.o
+# Test main object
+TESTMAINOBJ = main.test.o
 # Source files
-SOURCES	= main.c global.c prompt.c read_input.c message.c var_table.c\
-hash_map.c process.c
+SOURCES	= main.c main.test.c global.c prompt.c read_input.c message.c\
+var_table.c hash_map.c process.c
 # Headers
 HEADERS = global.h prompt.h read_input.h message.h var_table.h\
 hash_map.h process.h
@@ -20,20 +26,27 @@ debug: all
 release: OPTIONS += -O3
 release: all
 
-all: $(OBJECTS)
-	$(CC) -o $(EXECUTABLE) $(OBJECTS)
+test: OPTIONS += -Wall -g
+test: $(OBJECTS) $(TESTMAINOBJ)
+	$(CC) -o $(TESTEXEC) $(TESTMAINOBJ) $(OBJECTS)
+
+all: $(OBJECTS) $(MAINOBJ)
+	$(CC) -o $(EXECUTABLE) $(MAINOBJ) $(OBJECTS)
 
 # make clean
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE) *.gch
+	rm -f $(OBJECTS) $(MAINOBJ) $(TESTMAINOBJ) $(EXECUTABLE) *.gch
 
 # All files in this project heavily rely on global.h
 %.o: %.c global.h
 	$(CC) $(OPTIONS) $<
 
 # Dependencies
-main.o:	global.o read_input.o read_input.h message.o message.h
+main.o:	$(OBJECTS) $(HEADERS)
+	$(CC) $(OPTIONS) main.c
+main.test.o: main.test.c $(OBJECTS) $(HEADERS)
+	$(CC) $(OPTIONS) main.test.c
 prompt.o: prompt.h
 read_input.o: global.o read_input.h prompt.h
 message.o: message.h

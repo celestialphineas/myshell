@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
+#include <sys/wait.h>
 #include "var_table.h"
 
 // Boolean definition
@@ -31,6 +32,7 @@ typedef int boolean;
 #define HOSTNAME_NOT_FOUND_     6
 #define ENVIRONMENT_FAULT_      7
 #define VAR_HASH_TABLE_ERR_     8
+#define PROCESS_CREATE_ERR_     9
 
 // Prompt style
 // ============
