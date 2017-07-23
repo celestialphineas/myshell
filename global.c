@@ -1,7 +1,7 @@
 #include "global.h"
 
 // Concrete global properties
-int MYSHELL_PID;
+pid_t MYSHELL_PID;
 int MYSHELL_TERM_IN;
 int MYSHELL_TERM_OUT;
 int MYSHELL_TERM_ERR;
@@ -70,13 +70,17 @@ static void handle_myshell_signals()
     // Take over the signals if myshell is running in interactive mode
     if(INTERACTIVE_MODE)
     {
-        // Todo: Handle this:
+        // Key board interrupt (^C)
         signal(SIGINT, SIG_IGN);
-        // These should not be handled
+        // Quit (^Q)
         signal(SIGQUIT, SIG_IGN);
+        // Terminal stop (^Z)
         signal(SIGTSTP, SIG_IGN);
+        // Read from terminal
         signal(SIGTTIN, SIG_IGN);
+        // Write to terminal
         signal(SIGTTOU, SIG_IGN);
+        // Child process finished
         signal(SIGCHLD, SIG_IGN);
     }
 }
@@ -103,7 +107,9 @@ static void grab_term_ctrl()
     // Take over the terminal if myshell is running in interactive mode
     if(INTERACTIVE_MODE)
     {
+        // Set the forground process group ID
         tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+        // Get the state of FD and put it in TERM_ATTR
         tcgetattr(MYSHELL_TERM_IN, &TERM_ATTR);
     }
 }

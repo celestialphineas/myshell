@@ -1,4 +1,4 @@
-#include "doc_display.h"
+#include "message.h"
 
 void print_docs(const char *filename)
 {
@@ -19,5 +19,13 @@ void print_docs(const char *filename)
     {
         execl("/bin/cat", "cat", path, NULL);
     }
+    return;
+}
+
+void print_myshell_err(const char *message)
+{
+    printf("myshell: ");
+    write(2, message, strlen(message));
+    printf("\n");
     return;
 }

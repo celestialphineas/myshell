@@ -3,8 +3,8 @@
 // Author: Celestial Phineas @ ZJU
 //         (Yehang YIN)
 // Simply display docs to stdout
-#ifndef CELPHI_DOC_DISPLAY
-#define CELPHI_DOC_DISPLAY
+#ifndef CELPHI_MESSAGE_H
+#define CELPHI_MESSAGE_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,4 +15,5 @@
 #endif
 #define DOC_PATH  "doc/"  
 void print_docs(const char *filename);
+void print_myshell_err(const char *message);
 #endif

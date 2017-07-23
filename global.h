@@ -68,7 +68,7 @@ typedef int boolean;
 // Global properties
 // =================
 // myshell pid
-extern int MYSHELL_PID;
+extern pid_t MYSHELL_PID;
 // myshell terminal file descriptors
 extern int MYSHELL_TERM_IN;     // stdin
 extern int MYSHELL_TERM_OUT;    // stdout

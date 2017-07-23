@@ -15,7 +15,7 @@
 // For global definitions and initializations, see global.h for more info
 #include "global.h"
 #include "read_input.h"
-#include "doc_display.h"
+#include "message.h"
 
 static void handle_args(int argc, char **argv);
 
