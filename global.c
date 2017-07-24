@@ -40,6 +40,9 @@ void init()
         MYSHELL_PID = getpid();
     // If failed to get the pid
     if(MYSHELL_PID < 0)  exit(PID_FAILURE_);
+    // Set process group ID
+    // Make myshell the process group leader
+    setpgid(MYSHELL_PID, MYSHELL_PID);
 
     // Initialize myshell path
     // First get the initial pwd

@@ -344,16 +344,16 @@ Process *destruct_process_pipeline(ProcessPipeline pl)
     }
     // Clean up the files
     if(pl->fd_stdin != STDIN_FILENO
-        || pl->fd_stdin != STDOUT_FILENO
-        || pl->fd_stdin != STDERR_FILENO)
+        && pl->fd_stdin != STDOUT_FILENO
+        && pl->fd_stdin != STDERR_FILENO)
             close(pl->fd_stdin);
     if(pl->fd_stdout != STDIN_FILENO
-        || pl->fd_stdout != STDOUT_FILENO
-        || pl->fd_stdout != STDERR_FILENO)
+        && pl->fd_stdout != STDOUT_FILENO
+        && pl->fd_stdout != STDERR_FILENO)
             close(pl->fd_stdout);
     if(pl->fd_stderr != STDIN_FILENO
-        || pl->fd_stderr != STDOUT_FILENO
-        || pl->fd_stderr != STDERR_FILENO)
+        && pl->fd_stderr != STDOUT_FILENO
+        && pl->fd_stderr != STDERR_FILENO)
             close(pl->fd_stderr);
     return NULL;
 }
