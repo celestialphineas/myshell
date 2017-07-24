@@ -4,18 +4,41 @@
 char *prompt1_read()
 {
     char *result = NULL;
-    size_t command_length = 0;
+    char buffer[MAX_COMMAND_LEN] = {};
+    int i = 0;
+    int char_read;
     print_ps1();
-    // View more info of getline function in man getline(3)
-    getline(&result, &command_length, stdin);
+    while((char_read = getchar()) != '\n')
+    {
+        if(char_read == EOF)
+        {
+            printf("exit\n");
+            exit(0);
+        }
+        else buffer[i++] = (char)char_read;
+    }
+    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    strcpy(result, buffer);
     return result;
 }
 
 char *prompt2_read()
 {
     char *result = NULL;
-    size_t command_length = 0;
+    char buffer[MAX_COMMAND_LEN] = {};
+    int i = 0;
+    int char_read;
     print_ps2();
-    getline(&result, &command_length, stdin);
+    while((char_read = getchar()) != '\n')
+    {
+        if(char_read == EOF)
+        {
+            printf("exit\n");
+            exit(0);
+        }
+        else buffer[i++] = (char)char_read;
+    }
+    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    strcpy(result, buffer);
     return result;
 }

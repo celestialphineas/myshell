@@ -2,7 +2,8 @@
 
 static void restore_signals();
 
-Job *job_list;
+Job *job_list = NULL;
+static int global_job_number = 0;
 
 Process *create_process(int argc_, char **argv_,
     boolean is_pipe_, boolean append_out_, boolean append_err_,
@@ -325,6 +326,116 @@ void launch_job(Job *j, ForegroundBoolean foreground)
     return;
 }
 
+Job *create_job(Process *process_list_, char *command_)
+{
+    Job *new_job;
+    if(!process_list_) return NULL;
+    new_job = (Job*)malloc(sizeof(Job));
+    if(!new_job) exit(MEM_ALLOC_ERR_);
+    new_job->next = NULL;
+    new_job->process_list = process_list_;
+    new_job->command = (char*)malloc((strlen(command_) + 1) * sizeof(char));
+    if(!new_job->command) exit(MEM_ALLOC_ERR_);
+    strcpy(new_job->command, command_);
+    new_job->pgid = 0;
+    new_job->notified = false;
+    new_job->tmodes = TERM_ATTR;
+    new_job->job_number = global_job_number++;
+    new_job->state = UNSTARTED;
+    return new_job;
+}
+
+Job *create_job_in_list(Process *process_list_, char *command_)
+{
+    Job *job = create_job_in_list(process_list_, command_);
+    Job *j;
+    if(!job) return job;
+    if(!job_list)
+    {
+        job_list = job;
+        return job;
+    }
+    for(j = job_list; j->next; j = j->next);
+    j->next = job;
+    return job;
+}
+
+Job *find_job_by_id(int job_number_)
+{
+    Job *j;
+    for(j = job_list; j; j = j->next)
+    {
+        if(j->job_number == job_number_) return j;
+    }
+    return NULL;
+}
+
+Job *find_job_by_pgid(pid_t pgid_)
+{
+    Job *j;
+    for(j = job_list; j; j = j->next)
+    {
+        if(j->pgid == pgid_) return j;
+    }
+    return NULL;
+}
+
+void clean_up_jobs()
+{
+    Job *j;
+    for(j = job_list; j; j = j->next)
+    {
+        refresh_job_status(j);
+        if(j->state == COMPLETED)
+        {
+            job_notify(j);
+        }
+        // Delete this if notified
+        if(j->notified)
+        {
+            j->process_list = destruct_process_pipeline(j->process_list);
+            free(j->command); j->command = NULL;
+            if(j->next)
+            {
+                Job *to_delete_next = j->next;
+                // Let this node by its next
+                *j = *(j->next);
+                // And free the next node
+                free(to_delete_next);
+                return;
+            }
+            else // This node is the last node of the linked list
+            {
+                if(!job_list->next)
+                {
+                    free(job_list);
+                    job_list = NULL;
+                    return;
+                }
+                else
+                {
+                    Job *jj;
+                    for(jj = job_list; jj->next->next; jj = jj->next);
+                    free(j);
+                    jj->next = NULL;
+                    return;
+                }
+            }
+        }
+    }
+}
+
+void job_notify(Job *j)
+{
+    if(!j) return;
+    refresh_job_status(j);
+    if(j->state != COMPLETED) return;
+    if(j->notified) return;
+    j->notified = true;
+    printf("[%d]-\tCompleted\t%s\n", j->job_number, j->command);
+    return;
+}
+
 // Refresh the status of the processes in the pipeline
 void refresh_pipeline_status(Process *p)
 {
@@ -386,7 +497,8 @@ void refresh_job_status(Job *j)
         }
         else if(p->state != COMPLETED)
         {
-            j->state = RUNNING;
+            if(j->process_list->state != UNSTARTED)
+                j->state = RUNNING;
             return;
         }
     }

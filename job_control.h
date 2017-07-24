@@ -91,6 +91,16 @@ extern Job *job_list;
 // However it makes a copy of command.
 // Handle with care
 Job *create_job(Process *process_list, char *command);
+// And this one create the job in the global job list
+Job *create_job_in_list(Process *process_list, char *command);
+// Find the job by its job_number
+Job *find_job_by_id(int job_number_);
+// Find the job by its pgid
+Job *find_job_by_pgid(pid_t pgid_);
+// Clean up the completed jobs
+void clean_up_jobs();
+// Job notify
+void job_notify(Job*);
 
 typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
 
