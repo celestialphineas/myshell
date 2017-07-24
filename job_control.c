@@ -2,6 +2,8 @@
 
 static void restore_signals();
 
+Job *job_list;
+
 Process *create_process(int argc_, char **argv_,
     boolean is_pipe_, boolean append_out_, boolean append_err_,
     PipelineDiscipline pipeline_discipline_,

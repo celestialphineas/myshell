@@ -1,3 +1,9 @@
+// Job and process control
+// =======================
+// Author: Celestial Phineas
+//         (Yehang YIN)
+// This file implements the job control feature of myshell
+// Also handles the process pipeline
 #ifndef CELPHI_JOB_CONTROL_H
 #define CELPHI_JOB_CONTROL_H
 #include "global.h"
@@ -18,6 +24,24 @@ typedef enum
     RUNNING = 3
 } State;
 
+// The process as well as the process pipeline data structure
+// ==========================================================
+// next     - Next process in the pipeline
+// argc     - Argument count
+// argv     - Argument value
+// pid      - Pid
+// pgid     - Process group ID
+// state    - Current process state
+// status_value         - Return status value
+// is_pipe              - If the process creates a pipe
+// pipeline_discipline  - && or ||
+// fd_stdin     - File descriptor for stdin
+// fd_stdout    - File descriptor for stdout
+// fd_stderr    - File descriptor for stderr
+// append_out   - Output mode: whether open the output file in appending mode
+// append_err   - Error output mode: whether open the error file in appending mode
+
+// Head of this linked list is the process group leader.
 typedef struct Process
 {
     struct Process *next;
@@ -35,6 +59,19 @@ typedef struct Process
     State state;
 } Process;
 
+// When creating a process,
+// All the arguments are made a copy
+Process *create_process(int argc_, char **argv_,
+    boolean is_pipe_, boolean append_out_, boolean append_err_,
+    PipelineDiscipline pipeline_discipline_,
+    char *in_file, char *out_file, char *err_file,
+    int in_file_fd, int out_file_fd, int err_file_fd);
+// The destruct process pipeline method destructs the process list
+Process *destruct_process_pipeline(Process *p);
+
+// ProcessPipeline is a series of process
+typedef Process *ProcessPipeline;
+
 typedef struct Job
 {
     struct Job *next;
@@ -47,13 +84,13 @@ typedef struct Job
     State state;
 } Job;
 
+// There is a global access point for the job list
 extern Job *job_list;
 
-Process *create_process(int argc_, char **argv_,
-    boolean is_pipe_, boolean append_out_, boolean append_err_,
-    PipelineDiscipline pipeline_discipline_,
-    char *in_file, char *out_file, char *err_file,
-    int in_file_fd, int out_file_fd, int err_file_fd);
+// Create a job. It adopts the process list and make shallow copy of it
+// However it makes a copy of command.
+// Handle with care
+Job *create_job(Process *process_list, char *command);
 
 typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
 
