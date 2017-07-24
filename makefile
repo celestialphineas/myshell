@@ -36,7 +36,7 @@ all: $(OBJECTS) $(MAINOBJ)
 # make clean
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(MAINOBJ) $(TESTMAINOBJ) $(EXECUTABLE) *.gch
+	rm -f $(OBJECTS) $(MAINOBJ) $(TESTMAINOBJ) $(EXECUTABLE) $(TESTEXEC) *.gch
 
 # All files in this project heavily rely on global.h
 %.o: %.c global.h
