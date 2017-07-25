@@ -84,6 +84,7 @@ extern struct termios TERM_ATTR;
 // Global arguments
 extern int GLOBAL_ARGC;
 extern char **GLOBAL_ARGV;
+extern int LATEST_STATUS;
 // MYSHELL_ARG_OFFSET defines the argument offset
 // Negative indicates that there are no arguments passed to the session
 // Otherwise, GLOBAL_ARGV[MYSHELL_ARG_OFFSET] and the arguments followed by
@@ -114,5 +115,7 @@ char *get_myshell_path();       // Get myshell path
 char *get_ps1();                // Get PS1
 char *get_ps2();                // Get PS2
 char *get_pwd();                // Get PWD
+
+void sigchld_handler(int signum);
 
 #endif

@@ -67,7 +67,8 @@ Process *create_process(int argc_, char **argv_,
     char *in_file, char *out_file, char *err_file,
     int in_file_fd, int out_file_fd, int err_file_fd);
 // The destruct process pipeline method destructs the process list
-Process *destruct_process_pipeline(Process *p);
+Process *destruct_process_pipeline(Process*);
+Process *find_process_by_pid(pid_t);
 
 // ProcessPipeline is a series of process
 typedef Process *ProcessPipeline;
@@ -104,17 +105,15 @@ void job_notify(Job*);
 
 typedef enum {BACKGROUND = 0, FORGROUND = 1} ForegroundBoolean;
 
+void launch_job(Job*, ForegroundBoolean);
 // This function updates the status of processes in a pipeline
 void refresh_pipeline_status(Process*);
 // And this updates the processes in a job
 // and the job itself
 void refresh_job_status(Job*);
-// Wait for a job to finishe
-// This has not to set myshell back to the foreground
-void wait_for_job(Job*);
 // Put a process to the foregroud
-void fg_job(Job*, boolean send_sigcont);
+void fg_job(Job*);
 // Put a process to the background
-void bg_job(Job*, boolean send_sigcont);
+void bg_job(Job*);
 
 #endif

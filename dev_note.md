@@ -12,7 +12,9 @@ Shift support
 ## Something I have learnt
 
 - The essence of shebang
-- 
+- 子进程信号的捕获，应当采取循环等待任何信号，再处理的方式。
+- 父进程的SIGCHLD不应当忽略。否则将没有办法获得子进程的返回值。
+- 当PGID不再存在时setpgid会发生错误
 
 ## A list of shell variables
 

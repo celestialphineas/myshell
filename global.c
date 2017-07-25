@@ -12,6 +12,7 @@ struct termios TERM_ATTR;
 int GLOBAL_ARGC;
 char **GLOBAL_ARGV;
 int MYSHELL_ARG_OFFSET;
+int LATEST_STATUS;
 
 extern char** environ;
 
@@ -83,8 +84,8 @@ static void handle_myshell_signals()
         signal(SIGTTIN, SIG_IGN);
         // Write to terminal
         signal(SIGTTOU, SIG_IGN);
-        // Child process finished
-        signal(SIGCHLD, SIG_IGN);
+        // Child process signal handler
+        signal(SIGCHLD, sigchld_handler);
     }
 }
 

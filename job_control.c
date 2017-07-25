@@ -1,6 +1,9 @@
 #include "job_control.h"
 
+// The restore signals procedure is written for the child processes
 static void restore_signals();
+// The restore control procedure is written for the parent process
+static void restore_control();
 
 Job *job_list = NULL;
 static int global_job_number = 0;
@@ -162,20 +165,29 @@ Process *create_process(int argc_, char **argv_,
 }
 
 // This function is called in the forked process
-void init_child_process(Process *p, pid_t pgid, ForegroundBoolean foreground)
+// TODO: Handle the built-in functions
+void init_child_process(Process *p, pid_t *pgid, ForegroundBoolean foreground)
 {
     if(!p) return;
     if(p->argc == 0 || !p->argv || !p->argv[0]) return;
+    if(!pgid) return;
     if(INTERACTIVE_MODE)
     {
         // Set pgid
         p->pid = getpid();
-        if(!pgid) pgid = p->pid;
-        setpgid(p->pid, pgid);
+        if(!*pgid) *pgid = p->pid;
+        if(setpgid(0, *pgid) != 0)
+        {
+            *pgid = p->pid;
+            setpgid(0, 0);
+        }
         // If foreground
         // Set the terminal's control process group
         if(foreground)
-            tcsetpgrp(MYSHELL_TERM_IN, pgid);
+        {
+            tcsetpgrp(MYSHELL_TERM_IN, *pgid);
+            tcsetattr(MYSHELL_TERM_IN, TCSADRAIN, &TERM_ATTR);
+        }
         // Restore the signals
         restore_signals();
     }
@@ -195,12 +207,15 @@ void init_child_process(Process *p, pid_t pgid, ForegroundBoolean foreground)
         dup2(p->fd_stderr, STDERR_FILENO);
         close(p->fd_stderr);
     }
+    // Execute command
+    execvp(p->argv[0], p->argv);
 }
 
 Process *destruct_process_pipeline(Process *p)
 {
+    if(!p) return NULL;
     if(p->next)
-        p->next = destruct_process_pipeline(p);
+        p->next = destruct_process_pipeline(p->next);
     if(p->argv)
     {
         int i;
@@ -228,7 +243,6 @@ Process *destruct_process_pipeline(Process *p)
     return NULL;
 }
 
-// TODO: Handle the built-in functions
 void launch_job(Job *j, ForegroundBoolean foreground)
 {
     Process *p;
@@ -266,9 +280,8 @@ void launch_job(Job *j, ForegroundBoolean foreground)
         // Child process
         if(!forked)
         {
-            init_child_process(p, j->pgid, foreground);
-            // Execute command
-            execvp(p->argv[0], p->argv);
+            init_child_process(p, &(j->pgid), foreground);
+            
             // If failed write the error info
             {
                 char buffer[MAX_COMMAND_LEN] = {};
@@ -289,41 +302,67 @@ void launch_job(Job *j, ForegroundBoolean foreground)
         else
         {
             p->pid = forked;
-            if(INTERACTIVE_MODE)
+            // The job process group ID has not been set
+            if(!j->pgid)
+                j->pgid = forked;
+            // We need to do the same thing twice
+            // in case of a racing condition
+            if(setpgid(forked, j->pgid) != 0)
             {
-                // The job process group ID has not been set
-                if(!j->pgid)
-                    j->pgid = forked;
-                // We need to do the same thing twice
-                // in case of a racing condition
-                setpgid(forked, j->pgid);
+                setpgid(forked, forked);
+                j->pgid = forked;
             }
-            // Clean up the files of the launched process
-            if(p->fd_stdin != STDIN_FILENO
-            && p->fd_stdin != STDOUT_FILENO
-            && p->fd_stdin != STDERR_FILENO)
-                close(p->fd_stdin);
-            if(p->fd_stdout != STDIN_FILENO
-            && p->fd_stdout != STDOUT_FILENO
-            && p->fd_stdout != STDERR_FILENO)
-                close(p->fd_stdout);
-            if(p->fd_stderr != STDIN_FILENO
-            && p->fd_stderr != STDOUT_FILENO
-            && p->fd_stderr != STDERR_FILENO)
-                close(p->fd_stderr);
-            // TODO: Print the job
-            // If interactive shell
-            if(!INTERACTIVE_MODE)
+            // If not running in interactive mode
+            // or the job is launched as a forground job
+            // or the process in the pipeline must be blocked
+            // because of its pipelining discipline
+            if(!INTERACTIVE_MODE || foreground || p->pipeline_discipline != NORMAL)
             {
-                wait_for_job(j);
+                int status;
+                // pid_t pid;
+                if(!foreground)
+                    restore_control();
+                /*pid = */waitpid(p->pid, &status, WUNTRACED);
+                // If the job is stopped, stop the whole pipeline
+                // TODO: To print something
+                if(WIFSTOPPED(status))
+                {
+                    p->state = STOPPED;
+                    p->status_value = WIFSTOPPED(status);
+                    j->state = STOPPED;
+                    LATEST_STATUS = status;
+                    break;
+                }
+                else
+                {
+                    p->state = COMPLETED;
+                    p->status_value = status;
+                }
             }
-            else if(foreground)
-                fg_job(j, false);
             else
-                bg_job(j, false);
+            {
+                // TODO: Create background job, print something
+                restore_control();
+            }
         }
+        // Clean up the files of the launched process
+        if(p->fd_stdin != STDIN_FILENO
+        && p->fd_stdin != STDOUT_FILENO
+        && p->fd_stdin != STDERR_FILENO)
+            close(p->fd_stdin);
+        if(p->fd_stdout != STDIN_FILENO
+        && p->fd_stdout != STDOUT_FILENO
+        && p->fd_stdout != STDERR_FILENO)
+            close(p->fd_stdout);
+        if(p->fd_stderr != STDIN_FILENO
+        && p->fd_stderr != STDOUT_FILENO
+        && p->fd_stderr != STDERR_FILENO)
+            close(p->fd_stderr);
     }
-    return;
+    // To turn off the foreground notification
+    if((!INTERACTIVE_MODE || foreground) && j->state == COMPLETED)
+            j->notified = true;
+    restore_control();
 }
 
 Job *create_job(Process *process_list_, char *command_)
@@ -347,7 +386,7 @@ Job *create_job(Process *process_list_, char *command_)
 
 Job *create_job_in_list(Process *process_list_, char *command_)
 {
-    Job *job = create_job_in_list(process_list_, command_);
+    Job *job = create_job(process_list_, command_);
     Job *j;
     if(!job) return job;
     if(!job_list)
@@ -377,6 +416,17 @@ Job *find_job_by_pgid(pid_t pgid_)
     {
         if(j->pgid == pgid_) return j;
     }
+    return NULL;
+}
+
+Process *find_process_by_pid(pid_t pid_)
+{
+    Job *j;
+    Process *p;
+    for(j = job_list; j; j = j->next)
+        for(p = job_list->process_list; p; p = p->next)
+            if(p->pid == pid_)
+                return p;
     return NULL;
 }
 
@@ -442,33 +492,44 @@ void refresh_pipeline_status(Process *p)
     if(!p) return;
     for(; p; p = p->next)
     {
-        // Temporary status number to receive the status changes from
-        // function waitpid
-        int status;
-        // Return value of waitpid,
-        // Return 0 if the process is still ongoing
-        // Return the pid if the process is done
-        // For the stopped process, the status value is set a special result
-        pid_t pid;
-        pid = waitpid(p->pid, &status, WUNTRACED|WNOHANG);
-        // The process is ongoing
-        if(pid <= 0)
+        if(p->state == UNSTARTED || p->state == STOPPED)
         {
-            p->state = RUNNING;
-            break;
-        }
-            
-        // The process has stopped
-        // A temporary special status value is set for the stopped process
-        // This is defined in <stdlib.h>
-        if(WIFSTOPPED(status))
-            p->state = STOPPED;
-        // The process is completed
-        // And thus the status value of the process in the pipeline is set
-        else
-        {
-            p->state = COMPLETED;
-            p->status_value = status;
+            // Temporary status number to receive the status changes from
+            // function waitpid
+            int status;
+            // Return value of waitpid,
+            // Return 0 if the process is still ongoing
+            // Return the pid if the process is done
+            // For the stopped process, the status value is set a special result
+            pid_t pid;
+            pid = waitpid(p->pid, &status, WUNTRACED | WNOHANG);
+            // The process terminated
+            if(pid == -1)
+            {
+                // The process is running
+                if(!kill(pid, 0))
+                    p->state = RUNNING;
+                else // The process does not exist, i.e. terminated
+                    p->state = COMPLETED;
+            }
+            else if(pid == 0)
+            {
+                p->state = COMPLETED;
+                p->status_value = status;
+                LATEST_STATUS = status;
+            }
+            else if(WIFSTOPPED(status))
+            {
+                p->state = STOPPED;
+                p->status_value = status;
+                LATEST_STATUS = status;
+            }
+            else
+            {
+                p->state = COMPLETED;
+                p->status_value = status;
+                LATEST_STATUS = status;
+            }
         }
     }
     return;
@@ -481,11 +542,22 @@ void refresh_job_status(Job *j)
     if(!j) return;
     if(!j->process_list) return;
     refresh_pipeline_status(j->process_list);
+    p = j->process_list;
+    if(p->state == UNSTARTED)
+    {
+        j->state = UNSTARTED;
+        return;
+    }
     for(p = j->process_list; p; p = p->next)
     {
         if(p->state == STOPPED)
         {
             j->state = STOPPED;
+            return;
+        }
+        if(p->state == RUNNING)
+        {
+            j->state = RUNNING;
             return;
         }
         if(p->state == COMPLETED
@@ -495,7 +567,7 @@ void refresh_job_status(Job *j)
             j->state = COMPLETED;
             return;
         }
-        else if(p->state != COMPLETED)
+        if(p->state != COMPLETED)
         {
             if(j->process_list->state != UNSTARTED)
                 j->state = RUNNING;
@@ -506,59 +578,182 @@ void refresh_job_status(Job *j)
     return;
 }
 
-// Wait for job
-void wait_for_job(Job *j)
+void fg_job(Job *j)
 {
-    while(j->state != STOPPED || j->state != COMPLETED)
-        refresh_job_status(j);
-}
-
-void fg_job(Job *j, boolean send_sigcont)
-{
+    Process *p;
     if(!j) return;
     if(!j->process_list) return;
+    refresh_job_status(j);
+    if(j->state == COMPLETED) return;
     // Put the job to the foreground
     if(j->pgid)
         tcsetpgrp(MYSHELL_TERM_IN, j->pgid);
-    // If set, send the job a SIGCONT to let it continue
-    if(send_sigcont)
+    for(p = j->process_list; p; p = p->next)
     {
-        // This function set up the terminal attributes
-        // Option TCSADRAIN, see tcsetattr(3)
-        // TCSADRAIN:
-        // The change occurs after all output written to fd has been transmitted
-        // This option should be used when changing parameters that affect output
-        // tcsetattr(MYSHELL_TERM_IN, TCSADRAIN, &(j->tmodes));
-        if(j->pgid)
+        if(p->state == COMPLETED
+        && ((p->status_value != 0 && p->pipeline_discipline == NEXT_IF_SUCCUSS)
+            || (p->status_value == 0 && p->pipeline_discipline == NEXT_IF_FAILURE)))
         {
-            // Handle the process group
-            // Send the sigcont signal to them all
-            // The first parameter is set negative to work for the process group
-            // See kill(2):
-            // If pid is less than -1, then sig is sent to every process in the
-            // process group whose ID is -pid
-            if(kill(-j->pgid, SIGCONT) < 0)
-                print_myshell_err("Error when sending SIGCONT to a process group.");
+            j->state = COMPLETED;
+            break;
         }
+        if(p->state == COMPLETED) continue;
+        if(p->state == STOPPED)
+        {
+            // If failed to kill
+            if(!kill(-p->pid, SIGCONT))
+            {
+                print_myshell_err("Error when sending SIGCONT to a process group.");
+                j->state = COMPLETED;
+                break;
+            }
+            // Success to send SIGCONT to the process
+            // Do something similar to the launching
+            int status;
+            // pid_t pid;
+            /*pid = */waitpid(p->pid, &status, WUNTRACED);
+            if(WIFSTOPPED(status))
+            {
+                p->state = STOPPED;
+                p->status_value = WIFSTOPPED(status);
+                j->state = STOPPED;
+                break;
+            }
+        }
+        if(p->state == UNSTARTED)
+        {
+            int little_pipe[2];
+            // Handle pipe
+            if(p->is_pipe && p->next)
+            {
+                if(pipe(little_pipe) < 0)
+                {
+                    print_myshell_err("Failed to create a pipe.");
+                    exit(1);
+                }
+                // The output end of the pipe
+                p->fd_stdout = little_pipe[1];
+                // The input end of the pipe
+                p->next->fd_stdin = little_pipe[0];
+            }
+            pid_t forked = fork();
+            // Child process
+            if(!forked)
+            {
+                init_child_process(p, &(j->pgid), FORGROUND);
+                // If failed write the error info
+                {
+                    char buffer[MAX_COMMAND_LEN] = {};
+                    strcat(buffer, "Failed to launch: ");
+                    strcat(buffer, p->argv[0]);
+                    strcat(buffer, ". ");
+                    print_myshell_err(buffer);
+                }
+                exit(1);
+            }
+            // Failed
+            else if(forked < 0)
+            {
+                print_myshell_err("Unable to fork a child process.");
+                exit(1);
+            }
+            // Parent
+            else
+            {
+                p->pid = forked;
+                // The job process group ID has not been set
+                if(!j->pgid)
+                    j->pgid = forked;
+                // We need to do the same thing twice
+                // in case of a racing condition
+                if(setpgid(forked, j->pgid) != 0)
+                {
+                    setpgid(forked, forked);
+                    j->pgid = forked;
+                }
+                {
+                    int status;
+                    // pid_t pid;
+                    /*pid = */waitpid(p->pid, &status, WUNTRACED);
+                    // If the job is stopped, stop the whole pipeline
+                    if(WIFSTOPPED(status))
+                    {
+                        p->state = STOPPED;
+                        p->status_value = WIFSTOPPED(status);
+                        LATEST_STATUS = status;
+                        j->state = STOPPED;
+                        restore_control();
+                        return;
+                    }
+                    else
+                    {
+                        p->state = COMPLETED;
+                        p->status_value = status;
+                        LATEST_STATUS = status;
+                    }
+                }
+            }
+        }
+        // Clean up the files of the launched process
+        if(p->fd_stdin != STDIN_FILENO
+        && p->fd_stdin != STDOUT_FILENO
+        && p->fd_stdin != STDERR_FILENO)
+            close(p->fd_stdin);
+        if(p->fd_stdout != STDIN_FILENO
+        && p->fd_stdout != STDOUT_FILENO
+        && p->fd_stdout != STDERR_FILENO)
+            close(p->fd_stdout);
+        if(p->fd_stderr != STDIN_FILENO
+        && p->fd_stderr != STDOUT_FILENO
+        && p->fd_stderr != STDERR_FILENO)
+            close(p->fd_stderr);
     }
-    // wait for the job
-    wait_for_job(j);
-    // Now that the job is done
-    // Put the process back to the foreground
-    tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+    j->state = COMPLETED;
+    restore_control();
 }
 
-void bg_job(Job *j, boolean send_sigcont)
+void bg_job(Job *j)
 {
+    Process *p;
     if(!j) return;
     if(!j->process_list) return;
-    if(send_sigcont)
+    refresh_job_status(j);
+    if(j->state == COMPLETED) return;
+    for(p = j->process_list; p; p = p->next)
     {
-        if(j->pgid)
-        // I have already written enough in fg_job
-            if(kill(-j->pgid, SIGCONT) < 0)
+        if(p->state == COMPLETED) continue;
+        if(p->state == STOPPED)
+        {
+            if(!kill(-p->pid, SIGCONT))
+            {
                 print_myshell_err("Error when sending SIGCONT to a process group.");
+                j->state = COMPLETED;
+                break;
+            }
+        }
+        else
+        {
+            init_child_process(p, &j->pgid, BACKGROUND);
+        }
     }
+    return;
+}
+
+void sigchld_handler(int signum)
+{
+    int status;
+    pid_t pid;
+    Process *p;
+    pid = waitpid(-1, &status, WNOHANG | WUNTRACED);
+    p = find_process_by_pid(pid);
+    if(p)
+    {
+        p->status_value = status;
+        LATEST_STATUS = status;
+        if(WIFSTOPPED(status)) p->state = STOPPED;
+        else p->state = COMPLETED;
+    }
+    return;
 }
 
 static void restore_signals()
@@ -569,5 +764,19 @@ static void restore_signals()
     signal(SIGTTIN, SIG_DFL);
     signal(SIGTTOU, SIG_DFL);
     signal(SIGCHLD, SIG_DFL);
+    return;
+}
+
+static void restore_control()
+{
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
+    signal(SIGTTOU, SIG_IGN);
+    // Child process signal handler
+    signal(SIGCHLD, sigchld_handler);
+    tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+    tcsetattr(MYSHELL_TERM_IN, TCSADRAIN, &TERM_ATTR);
     return;
 }
