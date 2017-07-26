@@ -17,7 +17,9 @@ char *prompt1_read()
         }
         else buffer[i++] = (char)char_read;
     }
-    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    buffer[i++] = '\n';
+    buffer[i] = 0;
+    result = (char*)malloc((i + 1) * sizeof(char));
     strcpy(result, buffer);
     return result;
 }
@@ -38,7 +40,9 @@ char *prompt2_read()
         }
         else buffer[i++] = (char)char_read;
     }
-    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    buffer[i++] = '\n';
+    buffer[i] = 0;
+    result = (char*)malloc((i + 1) * sizeof(char));
     strcpy(result, buffer);
     return result;
 }
