@@ -1,5 +1,7 @@
 #include "preprocessor.h"
 
+char BLANK_CHAR[MAX_HOSTNAME_LEN] = " \t";
+
 int is_complete_command(char *cmd_str)
 {
     char *p;
@@ -65,4 +67,58 @@ int is_complete_command(char *cmd_str)
 
     if(top >= 0 || (in_dquote | in_squote)) return 0;
     return 1;
+}
+
+int is_blank_char(char c)
+{
+    int i;
+    for(i = 0; i < strlen(BLANK_CHAR); i++)
+    {
+        if(c == BLANK_CHAR[i]) return true;
+        else return false;
+    }
+    return false;
+}
+
+char *remove_comments(char *input)
+{
+    char *p;
+    int in_comment = 0;
+    char buffer[MAX_COMMAND_LEN];
+    int i = 0;
+    char *result = NULL;
+    if(!input)
+    {
+        result = (char*)malloc(sizeof(char));
+        result[0] = 0;
+        return result;
+    }
+    for(p = input; *p; p++)
+    {
+        if(in_comment)
+        {
+            if(*p == '\n')
+            {
+                in_comment = 0;
+                buffer[i++] = *p;
+            }
+            continue;
+        }
+        if(*p == '#')
+        {
+            in_comment = 1;
+            continue;
+        }
+        else buffer[i++] = *p;
+    }
+    buffer[i++] = '\n';
+    buffer[i] = 0;
+    result = (char*)malloc(sizeof(char) * (i + 1));
+    strcpy(result, buffer);
+    return result;
+}
+
+char *remove_extra_blank(char *input)
+{
+    
 }

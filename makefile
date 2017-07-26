@@ -8,17 +8,17 @@ EXECUTABLE = myshell
 TESTEXEC = test
 # Object files
 OBJECTS = global.o prompt.o read_input.o message.o var_table.o\
-hash_map.o job_control.o
+hash_map.o job_control.o preprocessor.o
 # Main object
 MAINOBJ = main.o
 # Test main object
 TESTMAINOBJ = main.test.o
 # Source files
 SOURCES	= main.c main.test.c global.c prompt.c read_input.c message.c\
-var_table.c hash_map.c job_control.c
+var_table.c hash_map.c job_control.c preprocessor.c
 # Headers
 HEADERS = global.h prompt.h read_input.h message.h var_table.h\
-hash_map.h job_control.h
+hash_map.h job_control.h preprocessor.h
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -53,3 +53,4 @@ message.o: message.h
 var_table.o: var_table.h hash_map.o
 hash_map.o: hash_map.h
 job_control.o: message.o message.h
+preprocessor.o: preprocessor.h

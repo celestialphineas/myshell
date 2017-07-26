@@ -14,6 +14,7 @@
 #include <termios.h>
 #include <sys/wait.h>
 #include "var_table.h"
+#include "preprocessor.h"
 
 // Boolean definition
 // ==================

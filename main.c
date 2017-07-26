@@ -25,6 +25,21 @@ int main(int argc, char **argv)
     handle_args(argc, argv);
     // The initialization cannot be removed
     init();
+    while(1)
+    {
+        char *command = prompt1_read();
+        while(!is_complete_command(command))
+        {
+            char *cat = prompt2_read();
+            char *temp_command
+                = (char*)malloc((strlen(command) + strlen(cat) + 1) * sizeof(char));
+            strcpy(temp_command, command);
+            strcat(temp_command, cat);
+            free(command);
+            free(cat);
+            command = temp_command;
+        }
+    }
     prompt1_read();
     prompt2_read();
     return 0;
