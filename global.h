@@ -63,6 +63,7 @@ typedef int boolean;
 #define MAX_PATH_LEN        4096
 #define MAX_PROMPT_LEN      16384
 #define MAX_COMMAND_LEN     16384
+#define MAX_COMMAND_LINES   16384
 #define MAX_HOSTNAME_LEN    64
 
 // Hostname path

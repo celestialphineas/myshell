@@ -12,6 +12,9 @@
 #ifndef MAX_HOSTNAME_LEN
 #define MAX_HOSTNAME_LEN 64
 #endif
+#ifndef MAX_COMMAND_LINES
+#define MAX_COMMAND_LINES 16384
+#endif
 #ifndef true
 #define true    (1)
 #endif
@@ -36,4 +39,12 @@ char *remove_comments(char *input);
 // And this function removes the extra blank spaces
 // Also removes the extra newlines
 char *remove_extra_blank(char *input);
+// This seperate the input string to commands
+// Behavior:
+//      Always allocate space for cmdv
+//      It is sure that the last element of cmdv is NULL
+//      If cmdc is NULL, allocate space
+// The return value is cmdv, i.e. an array of pointers
+// to strings where the seperated commands are stored
+char **seperate_commands(char *input, int *cmdc);
 #endif
