@@ -61,10 +61,4 @@ char *remove_extra_blank(char *input);
 // The return value is cmdv, i.e. an array of pointers
 // to strings where the seperated commands are stored
 char **seperate_commands(char *input, int *cmdc);
-// I use this line to test the preprocessor, lalala $(
-// You don\'t need to know whatever these comments are.)
-// Lalala and hahah $[
-// huhuhuhu]<<>> <;;| &sadf&
-// "hjkgjgh" 'hjgjhg' <><>
-// As you can see, I here have the Unfinished lines of commands
 #endif
