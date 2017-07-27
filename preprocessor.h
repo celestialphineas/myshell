@@ -63,5 +63,5 @@ char **seperate_commands(char *input, int *cmdc);
 // As you can see, I here have the
 // Unfinished lines of commands
 // Lalala and hahah $[
-// huhuhuhu]
+// huhuhuhu]<<>> <;;| &sadf&
 #endif

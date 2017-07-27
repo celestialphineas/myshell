@@ -1,6 +1,6 @@
 #include "tokenizer.h"
 
-char CONTROL_CHAR[MAX_HOSTNAME_LEN] = "&|()";
+char CONTROL_CHAR[MAX_HOSTNAME_LEN] = "&|()<>";
 
 int is_control_char(char c)
 {
