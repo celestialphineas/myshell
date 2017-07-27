@@ -63,7 +63,8 @@ char *raw_tokenize(char *input, int *len)
         }
         if(is_control_char(input[i]))
         {
-            if(i > 0 && !is_control_char(input[i - 1]))
+            if(i > 0 && !is_control_char(input[i - 1])
+                && !is_blank_char(input[i - 1]))
                 buffer[j++] = 0;
             buffer[j++] = input[i];
             if(i < strlen(input) && !is_control_char(input[i + 1])

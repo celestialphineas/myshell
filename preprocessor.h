@@ -59,7 +59,7 @@ char *remove_extra_blank(char *input);
 // to strings where the seperated commands are stored
 char **seperate_commands(char *input, int *cmdc);
 // I use this line to test the preprocessor, lalala $(
-// You don't need to know whatever these comments are.)
+// You don\'t need to know whatever these comments are.)
 // As you can see, I here have the
 // Unfinished lines of commands
 // Lalala and hahah $[
