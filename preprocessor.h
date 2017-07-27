@@ -33,6 +33,7 @@ int is_complete_command(char *cmd_str);
 // If the input is NULL
 // The result is a valid empty string
 char *remove_comments(char *input);
-// And this function remove the extra blank spaces
+// And this function removes the extra blank spaces
+// Also removes the extra newlines
 char *remove_extra_blank(char *input);
 #endif

@@ -75,7 +75,6 @@ int is_blank_char(char c)
     for(i = 0; i < strlen(BLANK_CHAR); i++)
     {
         if(c == BLANK_CHAR[i]) return true;
-        else return false;
     }
     return false;
 }
@@ -120,5 +119,58 @@ char *remove_comments(char *input)
 
 char *remove_extra_blank(char *input)
 {
-    
+    int meet_blank = 0;
+    int meet_newline = 0;
+    int meet_backslash = 0;
+    char *p;
+    char *result;
+    char buffer[MAX_COMMAND_LEN];
+    int i = 0;
+
+    for(p = input; *p; p++)
+    {
+        if(meet_blank)
+        {
+            if(is_blank_char(*p))
+                continue;
+        }
+        if(meet_newline)
+        {
+            if(*p == '\n')
+                continue;
+        }
+        if(meet_backslash)
+        {
+            // The next char
+            if(p[1] == '\n')
+            {
+                p++;
+                meet_backslash = 0;
+                continue;
+            }
+            else
+            {
+                buffer[i++] = '\\';
+                meet_backslash = 0;
+            }
+        }
+        meet_blank = 0;
+        meet_newline = 0;
+        if(is_blank_char(*p))
+            meet_blank = 1;
+        if(*p == '\n')
+            meet_newline = 1;
+        if(*p == '\\')
+        {
+            meet_backslash = 1;
+            continue;
+        }
+        buffer[i++] = *p;
+    }
+    if(buffer[i - 1] != '\n') buffer[i++] = '\n';
+    buffer[i] = 0;
+    result = (char*)malloc((i + 1) * sizeof(char));
+    result[i] = 0;
+    strcpy(result, buffer);
+    return result;
 }
