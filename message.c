@@ -24,8 +24,8 @@ void print_docs(const char *filename)
 
 void print_myshell_err(const char *message)
 {
-    printf("myshell: ");
+    write(2, "myshell: ", strlen("myshell: "));
     write(2, message, strlen(message));
-    printf("\n");
+    write(2, "\n", strlen("\n"));
     return;
 }

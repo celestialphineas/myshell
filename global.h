@@ -94,6 +94,8 @@ extern int LATEST_STATUS;
 // Similar to the POSIX standard, $0 is either the bash path (interactive mode)
 // or the script path (script mode)
 extern int MYSHELL_ARG_OFFSET;
+// Blank space characters, defined in preprocessor.c
+extern char BLANK_CHAR[];
 
 // myshell flags
 // =============

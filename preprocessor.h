@@ -1,10 +1,18 @@
 // Command line string preprocessor
 // ================================
+// Author: Celestial Phineas @ ZJU
+//         (Yehang YIN)
+// Main targets of preprocessing
+// Remove all comments
+// Regularize the blank space
+// Handle the line-continuation character
+// Seperate commands
 #ifndef CELPHI_PREPROCESSOR_H
 #define CELPHI_PREPROCESSOR_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "message.h"
 
 #ifndef MAX_COMMAND_LEN
 #define MAX_COMMAND_LEN 16384
@@ -22,15 +30,14 @@
 #define false   (0)
 #endif
 
+// This exports the blank char sequence,
+// characters in which are seen as the blank space characters.
+// Space and tab by default.
 extern char BLANK_CHAR[];
 
+// Do what it is called! How obvious!
 int is_blank_char(char c);
 int is_complete_command(char *cmd_str);
-// Main targets of the preprocess
-// Remove all comments
-// Regularize the blank space
-// Handle the line-continuation character
-// Seperate commands
 
 // This function allocate new space for its result
 // If the input is NULL
@@ -41,10 +48,17 @@ char *remove_comments(char *input);
 char *remove_extra_blank(char *input);
 // This seperate the input string to commands
 // Behavior:
-//      Always allocate space for cmdv
+//      Always allocate space for cmdv if no error occurs
 //      It is sure that the last element of cmdv is NULL
 //      If cmdc is NULL, allocate space
+//      Set cmdc -1, if an error occurs, and returns NULL
 // The return value is cmdv, i.e. an array of pointers
 // to strings where the seperated commands are stored
 char **seperate_commands(char *input, int *cmdc);
+// I use this line to test the preprocessor, lalala $(
+// You don't need to know whatever these comments are.)
+// As you can see, I here have the
+// Unfinished lines of commands
+// Lalala and hahah $[
+// huhuhuhu]
 #endif

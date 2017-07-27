@@ -29,6 +29,7 @@ int is_complete_command(char *cmd_str)
             after_dollar = 0;
             p++;
             if(!*p) break;
+            if(*p == '\n') return 0;
             else continue;
         }
         if(*p == '$')
@@ -145,6 +146,7 @@ char *remove_extra_blank(char *input)
             if(p[1] == '\n')
             {
                 p++;
+                if(!*p) break;
                 meet_backslash = 0;
                 continue;
             }
@@ -175,6 +177,9 @@ char *remove_extra_blank(char *input)
     return result;
 }
 
+// This version of seperate_commands is abandoned
+// Now a new universal one replaces this and see its definition below
+#if 0
 char **seperate_commands(char *input, int *cmdc)
 {
     int in_squote = 0;
@@ -243,4 +248,93 @@ char **seperate_commands(char *input, int *cmdc)
     memcpy(allocated_result, result, (cmdi + 1) * sizeof(char*));
     *cmdc = cmdi;
     return allocated_result;
+}
+#endif
+
+char **seperate_commands(char *input, int *cmdc)
+{
+    int cmdi = 0;
+    char *temp;
+    char *processed;
+    char* result_buffer[MAX_COMMAND_LINES];
+    int i = 0;
+    char buffer[MAX_COMMAND_LEN];
+    // This pointer scans the input string
+    char *p;
+    char **result;
+
+    if(!cmdc)
+        cmdc = (int*)malloc(sizeof(int));
+    if(!input)
+    {
+        result = (char**)malloc(sizeof(char*));
+        result[0] = NULL;
+        return result;
+    }
+
+    // Process the input string, remove the comments and the extra spaces
+    temp = remove_comments(input);
+    processed = remove_extra_blank(temp);
+    free(temp);
+    temp = NULL;
+
+    buffer[0] = 0;
+    result_buffer[0] = NULL;
+
+    for(p = processed; *p; p++)
+    {
+        if(*p == '\n' || *p == ';')
+        {
+            int is_empty = 1;
+            int j;
+
+            buffer[i] = 0;
+            
+            for(j = 0; j < i; j++)
+            {
+                if(!is_blank_char(buffer[j]))
+                {
+                    is_empty = 0;
+                    break;
+                }
+            }
+
+            // Discard if meets an empty string
+            if(is_empty)
+            {
+                i = 0;
+                continue;
+            }
+            
+            // If not a complete command
+            if(!is_complete_command(buffer))
+            {
+                buffer[i++] = *p;
+                continue;
+            }
+
+            // Else
+            result_buffer[cmdi++] = (char*)malloc((i + 1) * sizeof(char));
+            strcpy(result_buffer[cmdi - 1], buffer);
+            i = 0;
+            continue;
+        }
+        else buffer[i++] = *p;
+    }
+    result_buffer[cmdi] = NULL;
+    // Unfinished line occurs at the end of the file
+    if(i != 0)
+    {
+        int j;
+        *cmdc = -1;
+        for(j = 0; j < cmdi; j++)
+            if(result_buffer[i]) free(result_buffer[i]);
+        print_myshell_err("Unexpected end of file. \
+Please check syntax of the input file.");
+        return NULL;
+    }
+    result = (char**)malloc((cmdi + 1) * sizeof(char*));
+    memcpy(result, result_buffer, (cmdi + 1) * sizeof(char*));
+    *cmdc = cmdi;
+    return result;
 }
