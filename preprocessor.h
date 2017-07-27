@@ -26,6 +26,9 @@
 #ifndef MAX_COMMAND_LINES
 #define MAX_COMMAND_LINES 16384
 #endif
+#ifndef MAX_TOKEN_NUM
+#define MAX_TOKEN_NUM 1024
+#endif
 #ifndef true
 #define true    (1)
 #endif
@@ -60,8 +63,8 @@ char *remove_extra_blank(char *input);
 char **seperate_commands(char *input, int *cmdc);
 // I use this line to test the preprocessor, lalala $(
 // You don\'t need to know whatever these comments are.)
-// As you can see, I here have the
-// Unfinished lines of commands
 // Lalala and hahah $[
 // huhuhuhu]<<>> <;;| &sadf&
+// "hjkgjgh" 'hjgjhg' <><>
+// As you can see, I here have the Unfinished lines of commands
 #endif

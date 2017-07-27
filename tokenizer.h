@@ -6,6 +6,8 @@
 #ifndef CELPHI_TOKENIZER_H
 #define CELPHI_TOKENIZER_H
 #include "preprocessor.h"
+#include <ctype.h>
+#include <string.h>
 
 extern char CONTROL_CHAR[];
 // Token data structure
@@ -46,5 +48,15 @@ int is_control_char(char c);
 // Return an empty string if the input is NULL
 // Return NULL if an error occurs.
 char *raw_tokenize(char *input, int *len);
+// The tokenize function is based on the raw_tokenize function
+// This is the major function here
+// It is ensured that the last element of the return result is NULL
+Token **tokenize(char *input, int *tokenc);
+
+int is_identifier(char *str);
+int is_control_sequence(char *str);
+int is_squoted_string(char *str);
+int is_dquoted_string(char *str);
+int is_set_expr(char *str);
 
 #endif

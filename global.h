@@ -65,6 +65,7 @@ typedef int boolean;
 #define MAX_COMMAND_LEN     16384
 #define MAX_COMMAND_LINES   16384
 #define MAX_HOSTNAME_LEN    64
+#define MAX_TOKEN_NUM       1024
 
 // Hostname path
 #define HOSTNAME_PATH   "/etc/hostname"
