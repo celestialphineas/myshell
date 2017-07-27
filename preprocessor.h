@@ -14,6 +14,9 @@
 #include <string.h>
 #include "message.h"
 
+#ifndef MEM_ALLOC_ERR_
+#define MEM_ALLOC_ERR_ 3
+#endif
 #ifndef MAX_COMMAND_LEN
 #define MAX_COMMAND_LEN 16384
 #endif

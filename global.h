@@ -96,6 +96,8 @@ extern int LATEST_STATUS;
 extern int MYSHELL_ARG_OFFSET;
 // Blank space characters, defined in preprocessor.c
 extern char BLANK_CHAR[];
+// Control characters, defined in tokenizer.c
+extern char CONTROL_CHAR[];
 
 // myshell flags
 // =============

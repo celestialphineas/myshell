@@ -40,8 +40,6 @@ int main(int argc, char **argv)
             command = temp_command;
         }
     }
-    prompt1_read();
-    prompt2_read();
     return 0;
 }
 

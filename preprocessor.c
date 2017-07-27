@@ -90,6 +90,7 @@ char *remove_comments(char *input)
     if(!input)
     {
         result = (char*)malloc(sizeof(char));
+        if(!result) exit(MEM_ALLOC_ERR_);
         result[0] = 0;
         return result;
     }
@@ -114,6 +115,7 @@ char *remove_comments(char *input)
     buffer[i++] = '\n';
     buffer[i] = 0;
     result = (char*)malloc(sizeof(char) * (i + 1));
+    if(!result) exit(MEM_ALLOC_ERR_);
     strcpy(result, buffer);
     return result;
 }
@@ -172,84 +174,11 @@ char *remove_extra_blank(char *input)
     if(buffer[i - 1] != '\n') buffer[i++] = '\n';
     buffer[i] = 0;
     result = (char*)malloc((i + 1) * sizeof(char));
+    if(!result) exit(MEM_ALLOC_ERR_);
     result[i] = 0;
     strcpy(result, buffer);
     return result;
 }
-
-// This version of seperate_commands is abandoned
-// Now a new universal one replaces this and see its definition below
-#if 0
-char **seperate_commands(char *input, int *cmdc)
-{
-    int in_squote = 0;
-    int in_dquote = 0;
-    int cmdi = 0;
-    char* result[MAX_COMMAND_LINES];
-    int i = 0;
-    char buffer[MAX_COMMAND_LEN];
-    // This pointer scans the input string
-    char *p;
-    char **allocated_result;
-
-    if(!cmdc)
-    {
-        cmdc = (int*)malloc(sizeof(int));
-    }
-    if(!input)
-    {
-        allocated_result = (char**)malloc(sizeof(char*));
-        allocated_result[0] = NULL;
-        return allocated_result;
-    }
-    *cmdc = 0;
-    for(p = input; *p; p++)
-    {
-        if(in_squote)
-        {
-            if(*p == '\'' && p > input && p[-1] != '\\')
-                in_squote = 0;
-            buffer[i++] = *p;
-            continue;
-        }
-        if(in_dquote)
-        {
-            if(*p == '\"' && p > input && p[-1] != '\\')
-                in_dquote = 0;
-            buffer[i++] = *p;
-            continue;
-        }
-        if(*p == '\'') in_squote = 1;
-        if(*p == '\"') in_dquote = 1;
-        if((*p == '\n' || *p == ';') && p > input && p[-1] != '\\')
-        {
-            int is_empty = 1;
-            int j;
-            for(j = 0; j < i; j++)
-            {
-                if(!is_blank_char(buffer[j]))
-                {
-                    is_empty = 0;
-                    break;
-                }
-            }
-            buffer[i] = 0;
-            // Discard if meets an empty string
-            if(is_empty) continue;
-            result[cmdi++] = (char*)malloc((i + 1) * sizeof(char));
-            strcpy(result[cmdi - 1], buffer);
-            i = 0;
-            continue;
-        }
-        else buffer[i++] = *p;
-    }
-    result[cmdi] = NULL;
-    allocated_result = (char**)malloc((cmdi + 1) * sizeof(char*));
-    memcpy(allocated_result, result, (cmdi + 1) * sizeof(char*));
-    *cmdc = cmdi;
-    return allocated_result;
-}
-#endif
 
 char **seperate_commands(char *input, int *cmdc)
 {
@@ -264,11 +193,15 @@ char **seperate_commands(char *input, int *cmdc)
     char **result;
 
     if(!cmdc)
-        cmdc = (int*)malloc(sizeof(int));
+    {
+        return NULL;
+    }
     if(!input)
     {
         result = (char**)malloc(sizeof(char*));
+        if(!result) exit(MEM_ALLOC_ERR_);
         result[0] = NULL;
+        if(cmdc) *cmdc = 0;
         return result;
     }
 
@@ -315,6 +248,7 @@ char **seperate_commands(char *input, int *cmdc)
 
             // Else
             result_buffer[cmdi++] = (char*)malloc((i + 1) * sizeof(char));
+            if(!result_buffer[cmdi - 1]) exit(MEM_ALLOC_ERR_);
             strcpy(result_buffer[cmdi - 1], buffer);
             i = 0;
             continue;
@@ -334,6 +268,7 @@ Please check syntax of the input file.");
         return NULL;
     }
     result = (char**)malloc((cmdi + 1) * sizeof(char*));
+    if(!result) exit(MEM_ALLOC_ERR_);
     memcpy(result, result_buffer, (cmdi + 1) * sizeof(char*));
     *cmdc = cmdi;
     return result;
