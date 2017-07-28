@@ -52,6 +52,9 @@ char *raw_tokenize(char *input, int *len);
 // This is the major function here
 // It is ensured that the last element of the return result is NULL
 Token **tokenize(char *input, int *tokenc);
+// Destruct token
+// Return NULL by default;
+Token *destruct_token(Token *token);
 
 int is_identifier(char *str);
 int is_control_sequence(char *str);

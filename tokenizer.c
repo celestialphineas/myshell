@@ -224,3 +224,11 @@ Token **tokenize(char *input, int *tokenc)
     *tokenc = j;
     return result;
 }
+
+Token *destruct_token(Token *token)
+{
+    if(!token) return NULL;
+    if(token->value) free(token->value);
+    free(token);
+    return NULL;
+}
