@@ -117,7 +117,7 @@ static void grab_term_ctrl()
     }
 }
 
-static void push_environ_to_var_table()
+void push_environ_to_var_table()
 {
     char key_buffer[32];
     char **p = environ;

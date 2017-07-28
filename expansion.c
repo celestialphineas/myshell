@@ -148,7 +148,6 @@ char *expand_myshell_argc(char *dollar_pos, char **end_pos)
         }
         free(varv);
     }
-    arg_count++;
     sprintf(buffer, "%d", arg_count);
     result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
     if(!result) exit(MEM_ALLOC_ERR_);
@@ -198,6 +197,7 @@ char *expand_myshell_arg(char *dollar_pos, char **end_pos)
 
     if(!dollar_pos || !end_pos) return NULL;
     digit[0] = dollar_pos[1];
+    *end_pos = dollar_pos + 1;
     return get_variable(digit, 0);
 }
 
@@ -210,7 +210,9 @@ char *expand_myshell_unbraced_var(char *dollar_pos, char **end_pos)
     if(!dollar_pos || !end_pos) return NULL;
     
     // The first element of an identifier
+    p++;
     key_buffer[i++] = *p;
+    p++;
     // Read in the key, greedily
     while(*p)
     {
@@ -270,7 +272,7 @@ char *expand_myshell_var(char *dollar_pos, char **end_pos)
     // Get the string in the brackets
     if(left_bracket_pos && right_bracket_pos)
     {
-        memcpy(bracket_buffer, left_bracket_pos,
+        memcpy(bracket_buffer, left_bracket_pos + 1,
             right_bracket_pos - left_bracket_pos - 1);
         bracket_buffer[right_bracket_pos - left_bracket_pos - 1] = 0;
     }
@@ -281,7 +283,7 @@ char *expand_myshell_var(char *dollar_pos, char **end_pos)
     else if(isdigit(bracket_buffer[0]))
         sscanf(bracket_buffer, "%d", &index_of_element);
     // Else it is illegal
-    else return NULL;
+    else if(bracket_buffer[0]) return NULL;
 
     // Make the braced buffer stores the identifier only
     if(left_bracket_pos) *left_bracket_pos = 0;
@@ -289,11 +291,16 @@ char *expand_myshell_var(char *dollar_pos, char **end_pos)
     // Clean up the braced buffer, remove the blank characters
     {
         char *blank_removed = remove_extra_blank(braced_buffer);
-        if(blank_removed) strcpy(braced_buffer, blank_removed);
+        if(blank_removed)
+        {
+            blank_removed[strlen(blank_removed) - 1] = 0;
+            strcpy(braced_buffer, blank_removed);
+        }
         else return NULL;
         free(blank_removed);
         blank_removed = NULL;
-        if(!is_identifier(braced_buffer)) return NULL;
+        if(!is_identifier(braced_buffer) && !isdigit(braced_buffer[0]))
+            return NULL;
     }
 
     // If it is to find out the number of elements in a list
@@ -412,6 +419,7 @@ char *var_expansion(char *str)
                 {
                     char err_info[MAX_HOSTNAME_LEN] = {};
                     strcpy(err_info, "Expansion error (Unknown var expr): ");
+                    strncat(err_info, p, 4);
                     strcat(err_info, "... ");
                     print_myshell_err(err_info);
                     return NULL;
