@@ -110,14 +110,15 @@ int is_myshell_unbraced_var(char *str)
 // ${[string]}
 int is_myshell_var(char *str)
 {
+    char *p = str;
     if(!str || !*str) return 0;
     if(str[0] != '$' || !str[1]) return 0;
     str++;
     if(*str != '{') return 0;
-    while(*str)
+    while(*p)
     {
-        if(*str == '}') return 1;
-        str++;
+        if(*str == '}' && !is_escaped(p, str)) return 1;
+        p++;
     }
     return 0;
 }
@@ -248,7 +249,7 @@ char *expand_myshell_var(char *dollar_pos, char **end_pos)
 
     // Read in the braced part
     p += 2;
-    while(*p != '}' && *p)
+    while(*p != '}' && *p && !is_escaped(p, dollar_pos))
     {
         braced_buffer[i++] = *p;
         p++;
@@ -435,6 +436,30 @@ char *var_expansion(char *str)
     }
 
     result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    strcpy(result, buffer);
+    return result;
+}
+
+char *escape_expansion(char *str)
+{
+    char buffer[MAX_COMMAND_LEN] = {};
+    int i = 0;
+    char *p = str;
+    char *result;
+    if(!str) return NULL;
+    for(p = str; *p; p++)
+    {
+        if(*p == '\\')
+        {
+            p++;
+            if(!*p) break;
+            buffer[i++] = *p;
+            continue;
+        }
+        buffer[i++] = *p;
+    }
+    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    if(!result) exit(MEM_ALLOC_ERR_);
     strcpy(result, buffer);
     return result;
 }

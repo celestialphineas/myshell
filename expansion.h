@@ -58,4 +58,9 @@ char *tilde_expansion(char *str);
 //      ${[identifier][ [iteger] ]}     variable element
 //      ${[identifier][ [@|*] ]}        variable value
 char *var_expansion(char *str);
+
+// Escape expansion
+// The escape expansion only deals with shell-defined expansions
+// Bash escape all character after '\\' and remove the very first '\\'
+char *escape_expansion(char *str);
 #endif

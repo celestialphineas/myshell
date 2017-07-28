@@ -5,9 +5,9 @@
 // This file implements a simple tokenizer for myshell
 #ifndef CELPHI_TOKENIZER_H
 #define CELPHI_TOKENIZER_H
-#include "preprocessor.h"
 #include <ctype.h>
 #include <string.h>
+#include "preprocessor.h"
 
 extern char CONTROL_CHAR[];
 // Token data structure

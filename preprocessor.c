@@ -127,7 +127,7 @@ char *remove_extra_blank(char *input)
     int meet_backslash = 0;
     char *p;
     char *result;
-    char buffer[MAX_COMMAND_LEN];
+    char buffer[MAX_COMMAND_LEN] = {};
     int i = 0;
 
     for(p = input; *p; p++)
@@ -145,10 +145,11 @@ char *remove_extra_blank(char *input)
         if(meet_backslash)
         {
             // The next char
-            if(p[1] == '\n')
+            if(p[0] == '\n')
             {
                 p++;
                 if(!*p) break;
+                buffer[i++] = *p;
                 meet_backslash = 0;
                 continue;
             }
