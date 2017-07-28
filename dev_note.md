@@ -23,7 +23,7 @@ Finally...
 - And no subshell feature!
 - And no $()!
 - No shell-level wildcards.
-- ANSI-C Quoting $'' support?
+- ~~ANSI-C Quoting $'' support?~~ NO!
 - ↑ ↓ ← → keyboard key support? Handle the cursor??
 
 ## Something I have learnt
@@ -79,9 +79,10 @@ Done.
 - [x] Hash map find
 - [x] Test hash map
 - [ ] Parser
-- [ ] Evaluate the tokens
-- [ ] Data structure for commands
+- [x] ~~Evaluate the tokens~~           Implemented by expansion.c
+- [x] ~~Data structure for commands~~   Implemented by universal job control
 - [ ] Full notification of job control
+- [ ] Built-ins
 - [x] Signal binding of SIGINT
 
 ## Ref
