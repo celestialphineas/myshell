@@ -334,27 +334,91 @@ char *var_expansion(char *str)
         {
             if(is_myshell_argc(p))
             {
-                // TODO
+                char *next_p;
+                char *expanded = expand_myshell_argc(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown argc expr): ");
+                    strncat(err_info, p, 4);
+                    strcat(err_info, "...");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
                 continue;
             }
             else if(is_myshell_argv(p))
             {
-                // TODO
+                char *next_p;
+                char *expanded = expand_myshell_argv(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown argv expr): ");
+                    strncat(err_info, p, 4);
+                    strcat(err_info, "... ");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
                 continue;
             }
             else if(is_myshell_arg(p))
             {
-                // TODO
+                char *next_p;
+                char *expanded = expand_myshell_arg(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown arg expr): ");
+                    strncat(err_info, p, 4);
+                    strcat(err_info, "... ");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
                 continue;
             }
             else if(is_myshell_unbraced_var(p))
             {
-                // TODO
+                char *next_p;
+                char *expanded = expand_myshell_unbraced_var(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown unbraced var): ");
+                    strncat(err_info, p, 4);
+                    strcat(err_info, "... ");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
                 continue;
             }
             else if(is_myshell_var(p))
             {
-                // TODO
+                char *next_p;
+                char *expanded = expand_myshell_var(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown var expr): ");
+                    strcat(err_info, "... ");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
                 continue;
             }
             // Else simply output the string
