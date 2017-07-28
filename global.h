@@ -87,6 +87,7 @@ extern struct termios TERM_ATTR;
 // Global arguments
 extern int GLOBAL_ARGC;
 extern char **GLOBAL_ARGV;
+// Most recent return status number
 extern int LATEST_STATUS;
 // MYSHELL_ARG_OFFSET defines the argument offset
 // Negative indicates that there are no arguments passed to the session
