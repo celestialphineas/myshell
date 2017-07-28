@@ -8,17 +8,17 @@ EXECUTABLE = myshell
 TESTEXEC = test
 # Object files
 OBJECTS = global.o prompt.o read_input.o message.o var_table.o\
-hash_map.o job_control.o preprocessor.o tokenizer.o
+hash_map.o job_control.o preprocessor.o tokenizer.o expansion.o
 # Main object
 MAINOBJ = main.o
 # Test main object
 TESTMAINOBJ = main.test.o
 # Source files
 SOURCES	= main.c main.test.c global.c prompt.c read_input.c message.c\
-var_table.c hash_map.c job_control.c preprocessor.c tokenizer.c
+var_table.c hash_map.c job_control.c preprocessor.c tokenizer.c expansion.c
 # Headers
 HEADERS = global.h prompt.h read_input.h message.h var_table.h\
-hash_map.h job_control.h preprocessor.h tokenizer.h
+hash_map.h job_control.h preprocessor.h tokenizer.h expansion.h
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -55,3 +55,4 @@ hash_map.o: hash_map.h
 job_control.o: message.c message.h
 preprocessor.o: preprocessor.h
 tokenizer.o: preprocessor.h preprocessor.c
+expansion.o: preprocessor.h tokenizer.h

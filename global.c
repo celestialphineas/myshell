@@ -20,7 +20,6 @@ extern char** environ;
 static void handle_myshell_signals();
 static char *create_hostname();
 static void grab_term_ctrl();
-static void push_environ_to_var_table();
 
 void init()
 {

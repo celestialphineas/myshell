@@ -159,7 +159,7 @@ Token **tokenize(char *input, int *tokenc)
     else if(!tokenc) return NULL;
 
     raw_tokenized = raw_tokenize(input, &raw_len);
-    if(!raw_tokenize) return NULL;
+    if(!raw_tokenized) return NULL;
 
     for(i = 0, j = 0; i < raw_len; )
     {

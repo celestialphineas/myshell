@@ -113,6 +113,7 @@ void init();
 // It can also be used to update the variable table
 // When a shift command is called
 void push_arg_to_var_table();
+void push_environ_to_var_table();
 // Get shell variables
 // -------------------
 // Implemented in global.c
