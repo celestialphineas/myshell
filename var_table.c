@@ -71,7 +71,7 @@ void delete_variable(const char *key_)
 char *get_variable(const char *key_, int index)
 {
     const HashEntry *found;
-    char buffer[MAX_PROMPT_LEN];
+    char buffer[MAX_PROMPT_LEN] = {};
     if(!key_ || index < MIN_QUERY_OP)
     {
         if(index == ListAll)
@@ -90,7 +90,7 @@ char *get_variable(const char *key_, int index)
             return result;
         }
     }
-    buffer[0] = 0;
+    
     found = find_entry(variable_table, key_);
     if(!found)
     {

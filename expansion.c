@@ -117,7 +117,7 @@ int is_myshell_var(char *str)
     if(*str != '{') return 0;
     while(*p)
     {
-        if(*str == '}' && !is_escaped(p, str)) return 1;
+        if(*p == '}' && !is_escaped(p, str)) return 1;
         p++;
     }
     return 0;

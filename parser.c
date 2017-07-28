@@ -36,7 +36,7 @@ boolean handle_assignment_expr(Token ***ptokenv, int *ptokenc)
         }
 
         // [identifier]=[string]
-        if(equal_pos != strlen(tokenv[0]->value))
+        if(equal_pos != strlen(tokenv[0]->value) - 1)
         {
             char *identifier = (char*)malloc((equal_pos + 1) * sizeof(char));
             char *str
@@ -44,10 +44,10 @@ boolean handle_assignment_expr(Token ***ptokenv, int *ptokenc)
             // See var_table.h for definition
             Variable *var = (Variable*)malloc(sizeof(Variable));
 
-            if(!identifier || !str || var) exit(MEM_ALLOC_ERR_);
+            if(!identifier || !str || !var) exit(MEM_ALLOC_ERR_);
             strncpy(identifier, tokenv[0]->value, equal_pos);
             strcpy(str, tokenv[0]->value + equal_pos + 1);
-            var->elec = 0;
+            var->elec = 1;
             var->elev = (char**)malloc(2 * sizeof(char));
             if(!var->elev) exit(MEM_ALLOC_ERR_);
             var->elev[0] = str;
