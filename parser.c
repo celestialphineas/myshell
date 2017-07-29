@@ -504,6 +504,7 @@ Process *read_in_process(Token ***ptokenv, int *ptokenc, int *found_bg)
 Job *command_to_job(char *cmd, int *found_bg)
 {
     Token **tokenv;
+    Job *result;
     int tokenc;
     int i;
     if(!cmd) return NULL;
@@ -537,18 +538,45 @@ Job *command_to_job(char *cmd, int *found_bg)
     }
 
     // Do the followings in a loop
-    // Todo: handle the pipes
-    // Process *handle_pipes(Token ***ptokenv, int *ptokenc)
-    // Todo: handle the redirections
-    // Process *handle_redirections(Token ***ptokenv, int *ptokenc)
+    // Process *read_in_process(Token ***ptokenv, int *ptokenc)
     // Handle the tokens
     // If meet NULL process also returns
-    if(!handle_assignment_expr(&tokenv, &tokenc))
     {
-        // If failed
-        print_myshell_err("Error occurred when parsing the assignment expression. ");
+        Process *process_head = NULL;
+        Process *current_process = NULL;
+        while(tokenc)
+        {
+            if(!handle_assignment_expr(&tokenv, &tokenc))
+            {
+                // If failed
+                print_myshell_err("Error occurred when parsing the assignment expression. ");
+                return NULL;
+            }
+            if(!tokenc) return NULL;
+            if(tokenv[0]->type == CONTROL)
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[0]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            if(!process_head)
+            {
+                process_head = read_in_process(&tokenv, &tokenc, found_bg);
+                if(!process_head) return NULL;
+                current_process = process_head;
+            }
+            else
+            {
+                current_process->next = read_in_process(&tokenv, &tokenc, found_bg);
+                if(!current_process->next) return NULL;
+                current_process = current_process->next;
+            }
+        }
+        // Construct the job
+        result = create_job(process_head, cmd);
     }
-
     
-    return NULL;
+    return result;
 }

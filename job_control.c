@@ -70,24 +70,24 @@ Process *create_process(int argc_, char **argv_,
     if(out_file)
     {
         // If the file is not write accessible
-        if(access(out_file, W_OK) != 0)
-        {
-            char buffer[MAX_COMMAND_LEN] = {};
-            strcat(buffer, out_file);
-            strcat(buffer, " is not write accessible.");
-            print_myshell_err(buffer);
-            free(new_process);
-            return NULL;
-        }
-        else // the file is write accessible
-        {
+        // if(access(out_file, W_OK) != 0)
+        // {
+        //     char buffer[MAX_COMMAND_LEN] = {};
+        //     strcat(buffer, out_file);
+        //     strcat(buffer, " is not write accessible.");
+        //     print_myshell_err(buffer);
+        //     free(new_process);
+        //     return NULL;
+        // }
+        // else // the file is write accessible
+        // {
             int fd;
             if(append_out_)
                 fd = open(out_file, O_WRONLY|O_CREAT|O_APPEND);
             else
                 fd = open(out_file, O_WRONLY|O_CREAT);
             new_process->fd_stdout = fd;
-        }
+        // }
     }
     else // Use the file descriptor
     {
