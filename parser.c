@@ -575,7 +575,7 @@ Job *command_to_job(char *cmd, int *found_bg)
             }
         }
         // Construct the job
-        result = create_job(process_head, cmd);
+        result = create_job_in_list(process_head, cmd);
     }
     
     return result;

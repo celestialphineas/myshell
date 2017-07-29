@@ -360,7 +360,7 @@ void launch_job(Job *j, ForegroundBoolean foreground)
             close(p->fd_stderr);
     }
     // To turn off the foreground notification
-    if((!INTERACTIVE_MODE || foreground) && j->state == COMPLETED)
+    if(!INTERACTIVE_MODE || foreground)
             j->notified = true;
     restore_control();
 }
