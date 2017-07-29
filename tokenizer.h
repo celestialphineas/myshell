@@ -42,7 +42,7 @@ typedef struct
 
 int is_control_char(char c);
 // You have to ensure that the input string is preprocessed
-// The raw tokenizer transform the input string to a series of seperated tokens
+// The raw tokenizer transform the input string to a series of separated tokens
 // in the returned string. Use '\0' as the separator and the filler.
 // Length of the returned string is stored in len.
 // Return an empty string if the input is NULL

@@ -181,7 +181,7 @@ char *remove_extra_blank(char *input)
     return result;
 }
 
-char **seperate_commands(char *input, int *cmdc)
+char **separate_commands(char *input, int *cmdc)
 {
     int cmdi = 0;
     char *temp;

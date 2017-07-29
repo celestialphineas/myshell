@@ -6,7 +6,7 @@
 // Remove all comments
 // Regularize the blank space
 // Handle the line-continuation character
-// Seperate commands
+// separate commands
 #ifndef CELPHI_PREPROCESSOR_H
 #define CELPHI_PREPROCESSOR_H
 #include <stdio.h>
@@ -52,13 +52,13 @@ char *remove_comments(char *input);
 // And this function removes the extra blank spaces
 // Also removes the extra newlines
 char *remove_extra_blank(char *input);
-// This seperate the input string to commands
+// This separate the input string to commands
 // Behavior:
 //      Always allocate space for cmdv if no error occurs
 //      It is sure that the last element of cmdv is NULL
 //      If cmdc is NULL, allocate space
 //      Set cmdc -1, if an error occurs, and returns NULL
 // The return value is cmdv, i.e. an array of pointers
-// to strings where the seperated commands are stored
-char **seperate_commands(char *input, int *cmdc);
+// to strings where the separated commands are stored
+char **separate_commands(char *input, int *cmdc);
 #endif

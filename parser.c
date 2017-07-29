@@ -160,6 +160,7 @@ Job *command_to_job(char *cmd)
 {
     Token **tokenv;
     int tokenc;
+    int i;
     if(!cmd) return NULL;
     if(!is_complete_command(cmd)) return NULL;
 
@@ -167,6 +168,25 @@ Job *command_to_job(char *cmd)
     if(!tokenv) return NULL;
 
     // Todo: shell expansions
+    for(i = 0; i < tokenc; i++)
+    {
+        if(tokenv[i]->type == DQUOTED || tokenv[i]->type == UNQUOTED)
+        {
+            char *tilde_expanded = tilde_expansion(tokenv[i]->value);
+            char *var_expanded = var_expansion(tilde_expanded);
+            char *escape_expanded = escape_expansion(var_expanded);
+            if(!escape_expanded)
+            {
+                if(tilde_expanded) free(tilde_expanded);
+                if(var_expanded) free(var_expanded);
+                print_myshell_err("Token expansion error. ");
+                return NULL;
+            }
+            free(tilde_expanded); free(var_expanded);
+            free(tokenv[i]->value);
+            tokenv[i]->value = escape_expanded;
+        }
+    }
 
     // Handle the tokens
     if(!handle_assignment_expr(&tokenv, &tokenc))

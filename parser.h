@@ -10,7 +10,7 @@
 #include "expansion.h"
 #include "job_control.h"
 
-// Argument cmd must be preprocessed with seperate_commands
+// Argument cmd must be preprocessed with separate_commands
 // Input of this slot must be a pipeline command
 Job *command_to_job(char *cmd);
 
