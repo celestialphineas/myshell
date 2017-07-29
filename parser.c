@@ -156,18 +156,88 @@ boolean handle_assignment_expr(Token ***ptokenv, int *ptokenc)
     return true;
 }
 
-Job *command_to_job(char *cmd)
+// Test if a token is a valid stdin/out/err file descriptor
+static boolean is_std_fd(const Token *token)
+{
+    if(!token) return false;
+    if(token->type != SQUOTED
+    || token->type != DQUOTED
+    || token->type != UNQUOTED)
+        return false;
+    if(strlen(token->value) != 1) return false;
+    if(token->value[0] >= '0' && token->value[1] <= '2') return true;
+    return false;
+}
+
+// Give the type of a control token
+// IN_RD                <   input redirection
+// OUT_RD               >   output redirection
+// OUT_RD_APPEND        >>  output redirection (append)
+// OUT_RD_DUP           >&  output redirection duplicated stdout/err
+// OUT_RD_APPEND_DUP    >>& output redirection duplicated fd (append)
+// PIPE_CONTROL         |   pipe
+// PIPELINE_AND         &&  pipeline and (next if succeed)
+// PIPELINE_OR          ||  pipeline or (next if fail)
+// BG_CONTROL           &   background job indicator
+// LEFT_BRACKET         (   left bracket
+// RIGHT_BRACKET        )   right bracket
+// DLEFT_BRACKET        ((  left double bracket (No use in myshell)
+// DRIGHT_BRACKET       ))  right double bracket (No use in myshell)
+typedef enum
+{
+    UNKNOWN = 0,
+    IN_RD = 1, OUT_RD = 2, OUT_RD_APPEND = 3,
+    OUT_RD_DUP = 4, OUT_RD_APPEND_DUP = 5,
+    PIPE_CONTROL = 6, PIPELINE_AND = 7, PIPELINE_OR = 8,
+    BG_CONTROL = 9, LEFT_BRACKET = 10, RIGHT_BRACKET = 11,
+    DLEFT_BRACKET = 12, DRIGHT_BRACKET = 13
+} ControlType;
+
+static ControlType control_type(const Token *token)
+{
+    if(!token) return false;
+    if(token->type != CONTROL) return false;
+    if(!strcmp(token->value, "<"))      return IN_RD;
+    if(!strcmp(token->value, ">"))      return OUT_RD;
+    if(!strcmp(token->value, ">>"))     return OUT_RD_APPEND;
+    if(!strcmp(token->value, ">&"))     return OUT_RD_DUP;
+    if(!strcmp(token->value, ">>&"))    return OUT_RD_APPEND_DUP;
+    if(!strcmp(token->value, "|"))      return PIPE_CONTROL;
+    if(!strcmp(token->value, "&&"))     return PIPELINE_AND;
+    if(!strcmp(token->value, "||"))     return PIPELINE_OR;
+    if(!strcmp(token->value, "&"))      return BG_CONTROL;
+    if(!strcmp(token->value, "("))      return LEFT_BRACKET;
+    if(!strcmp(token->value, ")"))      return RIGHT_BRACKET;
+    if(!strcmp(token->value, "(("))     return DLEFT_BRACKET;
+    if(!strcmp(token->value, "))"))     return DRIGHT_BRACKET;
+    return UNKNOWN;
+}
+
+// This function read in tokens,
+// convert the input tokens to a single process in a manner
+// And take out the used tokens
+Process *read_in_process(Token ***ptokenv, int *ptokenc, int *found_bg)
+{
+    int used[MAX_TOKEN_NUM];
+
+    return NULL;
+}
+
+Job *command_to_job(char *cmd, int *found_bg)
 {
     Token **tokenv;
     int tokenc;
     int i;
     if(!cmd) return NULL;
     if(!is_complete_command(cmd)) return NULL;
+    if(!found_bg) return NULL;
+
+    *found_bg = 0;
 
     tokenv = tokenize(cmd, &tokenc);
     if(!tokenv) return NULL;
 
-    // Todo: shell expansions
+    // Shell expansion
     for(i = 0; i < tokenc; i++)
     {
         if(tokenv[i]->type == DQUOTED || tokenv[i]->type == UNQUOTED)
@@ -188,6 +258,11 @@ Job *command_to_job(char *cmd)
         }
     }
 
+    // Do the followings in a loop
+    // Todo: handle the pipes
+    // Process *handle_pipes(Token ***ptokenv, int *ptokenc)
+    // Todo: handle the redirections
+    // Process *handle_redirections(Token ***ptokenv, int *ptokenc)
     // Handle the tokens
     if(!handle_assignment_expr(&tokenv, &tokenc))
     {
@@ -195,9 +270,6 @@ Job *command_to_job(char *cmd)
         print_myshell_err("Error occurred when parsing the assignment expression. ");
     }
 
-    // Todo: handle the pipes
-    // Process *handle_pipes(Token ***ptokenv, int *ptokenc)
-    // Todo: handle the redirections
-    // Process *handle_redirections(Token ***ptokenv, int *ptokenc)
+    
     return NULL;
 }

@@ -12,6 +12,6 @@
 
 // Argument cmd must be preprocessed with separate_commands
 // Input of this slot must be a pipeline command
-Job *command_to_job(char *cmd);
+Job *command_to_job(char *cmd, int *found_bg);
 
 #endif
