@@ -218,9 +218,287 @@ static ControlType control_type(const Token *token)
 // And take out the used tokens
 Process *read_in_process(Token ***ptokenv, int *ptokenc, int *found_bg)
 {
-    int used[MAX_TOKEN_NUM];
+    // Result
+    Process *result = NULL;
+    // Local tokenv and tokenc
+    Token **tokenv;
+    int tokenc;
+    // used, for token clean up
+    int i, j;
+    int used[MAX_TOKEN_NUM] = {};
+    // These will be passed to create_process
+    int argc_ = 0;
+    char *argv_buffer[MAX_TOKEN_NUM] = {};
+    boolean is_pipe_ = 0;
+    boolean append_out_ = 0;
+    boolean append_err_ = 0;
+    boolean pipeline_discipline_ = NORMAL;
+    char *infile_ = NULL;
+    char *outfile_ = NULL;
+    char *errfile_ = NULL;
+    int infile_fd_ = 0;
+    int outfile_fd_ = 1;
+    int errfile_fd_ = 2;
 
-    return NULL;
+    // Test argument validity
+    if(!ptokenv || !*ptokenv) return NULL;
+    if(!ptokenc) return NULL;
+    if(!found_bg) return NULL;
+    // Set local
+    tokenv = *ptokenv;
+    tokenc = *ptokenc;
+
+    // Handle the control tokens
+    for(i = 0; i < tokenc; i++)
+    {
+        if(used[i]) continue;
+        if(!tokenv[i]->value || !strcmp(tokenv[i]->value, "\n"))
+        {
+            used[i] = true;
+            continue;
+        }
+        // |, terminates
+        if(control_type(tokenv[i]) == PIPE_CONTROL)
+        {
+            used[i] = true;
+            is_pipe_ = true;
+            break;
+        }
+        // &, terminates
+        if(control_type(tokenv[i]) == BG_CONTROL)
+        {
+            used[i] = true;
+            *found_bg = 1;
+            break;
+        }
+        // ||, terminates
+        if(control_type(tokenv[i]) == PIPELINE_OR)
+        {
+            used[i] = true;
+            pipeline_discipline_ = NEXT_IF_FAILURE;
+            break;
+        }
+        // &&, terminates
+        if(control_type(tokenv[i]) == PIPELINE_AND)
+        {
+            used[i] = true;
+            pipeline_discipline_ = NEXT_IF_SUCCUSS;
+            break;
+        }
+        // <
+        if(control_type(tokenv[i]) == IN_RD)
+        {
+            used[i] = true;
+            if(!tokenv[i + 1])
+            {
+                print_myshell_err("Syntax error: Unexpected new line. ");
+                return NULL;
+            }
+            if(tokenv[i + 1]->type == CONTROL || tokenv[i + 1]->type == SET_EXPR)
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[i]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            infile_ = tokenv[i + 1]->value;
+            used[i + 1] = true;
+            continue;
+        }
+        // >
+        if(control_type(tokenv[i]) == OUT_RD)
+        {
+            // Redirect stderr flag
+            int rd_stderr = 0;
+            used[i] = true;
+            if(!tokenv[i + 1])
+            {
+                print_myshell_err("Syntax error: Unexpected new line. ");
+                return NULL;
+            }
+            if(tokenv[i + 1]->type == CONTROL || tokenv[i + 1]->type == SET_EXPR)
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[i]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            if(i > 0)
+            if(is_std_fd(tokenv[i - 1]) && tokenv[i - 1]->value[0] == '2')
+            {
+                used[i - 1] = 1;
+                rd_stderr = 1;
+            }
+            if(rd_stderr)
+                errfile_ = tokenv[i + 1]->value;
+            else outfile_ = tokenv[i + 1]->value;
+            used[i + 1] = true;
+            continue;
+        }
+        // >>
+        if(control_type(tokenv[i]) == OUT_RD_APPEND)
+        {
+            // Redirect stderr flag
+            int rd_stderr = 0;
+            used[i] = true;
+            if(!tokenv[i + 1])
+            {
+                print_myshell_err("Syntax error: Unexpected new line. ");
+                return NULL;
+            }
+            if(tokenv[i + 1]->type == CONTROL || tokenv[i + 1]->type == SET_EXPR)
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[i]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            if(i > 0)
+            if(is_std_fd(tokenv[i - 1]) && tokenv[i - 1]->value[0] == '2')
+            {
+                used[i - 1] = 1;
+                rd_stderr = 1;
+            }
+            if(rd_stderr)
+            {
+                errfile_ = tokenv[i + 1]->value;
+                append_err_ = 1;
+            }
+            else
+            {
+                outfile_ = tokenv[i + 1]->value;
+                append_out_ = 1;
+            }
+            used[i + 1] = true;
+            continue;
+        }
+        // >&
+        if(control_type(tokenv[i]) == OUT_RD_DUP)
+        {
+            // Redirect stderr flag
+            int rd_stderr = 0;
+            used[i] = true;
+            if(!tokenv[i + 1])
+            {
+                print_myshell_err("Syntax error: Unexpected new line. ");
+                return NULL;
+            }
+            if(!is_std_fd(tokenv[i + 1]))
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[i]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            if(i > 0)
+            if(is_std_fd(tokenv[i - 1]) && tokenv[i - 1]->value[0] == '2')
+            {
+                used[i - 1] = true;
+                rd_stderr = 1;
+            }
+            if(rd_stderr)
+            {
+                errfile_fd_ = tokenv[i + 1]->value[0] - '0';
+            }
+            else
+            {
+                outfile_fd_ = tokenv[i + 1]->value[0] - '0';
+            }
+            used[i + 1] = true;
+            continue;
+        }
+        // >>&
+        if(control_type(tokenv[i]) == OUT_RD_APPEND_DUP)
+        {
+            // Redirect stderr flag
+            int rd_stderr = 0;
+            used[i] = true;
+            if(!tokenv[i + 1])
+            {
+                print_myshell_err("Syntax error: Unexpected new line. ");
+                return NULL;
+            }
+            if(!is_std_fd(tokenv[i + 1]))
+            {
+                char err_info[MAX_HOSTNAME_LEN] = {};
+                strcpy(err_info, "Syntax error: Unexpected token: ");
+                strcat(err_info, tokenv[i]->value);
+                print_myshell_err(err_info);
+                return NULL;
+            }
+            if(i > 0)
+            if(is_std_fd(tokenv[i - 1]) && tokenv[i - 1]->value[0] == '2')
+            {
+                used[i - 1] = true;
+                rd_stderr = 1;
+            }
+            if(rd_stderr)
+            {
+                append_err_ = 1;
+                errfile_fd_ = tokenv[i + 1]->value[0] - '0';
+            }
+            else
+            {
+                append_err_ = 1;
+                outfile_fd_ = tokenv[i + 1]->value[0] - '0';
+            }
+            used[i + 1] = true;
+            continue;
+        }
+    }
+
+    // argc, argv
+    for(j = 0; j < tokenc; j++)
+    {
+        if(used[j]) break;
+        argv_buffer[argc_++] = tokenv[j]->value;
+        used[j] = true;
+    }
+    // Test if unexpected token occurs
+    for(; j < i; j++)
+    {
+        if(!used[j]) // Then there are unused tokens in the process command
+        {
+            char err_info[MAX_HOSTNAME_LEN] = {};
+            strcpy(err_info, "Syntax error: Unexpected token: ");
+            strcat(err_info, tokenv[j]->value);
+            print_myshell_err(err_info);
+            return NULL;
+        }
+    }
+    // Construct result process
+    result = create_process(argc_, argv_buffer,
+        is_pipe_, append_out_, append_err_, pipeline_discipline_,
+        infile_, outfile_, errfile_, infile_fd_, outfile_fd_, errfile_fd_);
+    if(!result)
+        print_myshell_err("Failed to create process. ");
+
+    // Token reconstruct
+    {
+        Token *tokenv_buffer[MAX_TOKEN_NUM] = {};
+        int temp_tokenc = 0;
+        int i;
+        for(i = 0; i < tokenc; i++)
+        {
+            if(!used[i] && tokenv[i]->value)
+                tokenv_buffer[temp_tokenc++] = tokenv[i];
+            else tokenv[i] = destruct_token(tokenv[i]);
+        }
+        free(tokenv);
+        tokenv = (Token**)malloc((temp_tokenc + 1) * sizeof(Token*));
+        if(!tokenv) exit(MEM_ALLOC_ERR_);
+        tokenv[temp_tokenc] = NULL;
+        memcpy(tokenv, tokenv_buffer, temp_tokenc * sizeof(Token*));
+        tokenc = temp_tokenc;
+
+        *ptokenv = tokenv;
+        *ptokenc = tokenc;
+    }
+    return result;
 }
 
 Job *command_to_job(char *cmd, int *found_bg)
@@ -264,6 +542,7 @@ Job *command_to_job(char *cmd, int *found_bg)
     // Todo: handle the redirections
     // Process *handle_redirections(Token ***ptokenv, int *ptokenc)
     // Handle the tokens
+    // If meet NULL process also returns
     if(!handle_assignment_expr(&tokenv, &tokenc))
     {
         // If failed
