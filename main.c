@@ -16,18 +16,25 @@
 #include "global.h"
 #include "read_input.h"
 #include "message.h"
+#include "job_control.h"
+#include "expansion.h"
+#include "parser.h"
 
 static void handle_args(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
-    // Handle arguments before initialization
     handle_args(argc, argv);
-    // The initialization cannot be removed
     init();
     while(1)
     {
         char *command = prompt1_read();
+        char **separated = NULL;
+        int cmdc;
+        int found_background = 0;
+        Job *job;
+
+
         while(!is_complete_command(command))
         {
             char *cat = prompt2_read();
@@ -38,7 +45,22 @@ int main(int argc, char **argv)
             free(command);
             free(cat);
             command = temp_command;
+            temp_command = remove_extra_blank(command);
+            free(command);
+            command = temp_command;
         }
+
+        if(separated) free(separated);
+        separated = separate_commands(command, &cmdc);
+        job = command_to_job(separated[0], &found_background);
+        if(job)
+        {
+            if(found_background)
+                launch_job(job, BACKGROUND);
+            else
+                launch_job(job, FORGROUND);
+        }
+        clean_up_jobs();
     }
     return 0;
 }

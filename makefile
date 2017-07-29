@@ -9,19 +9,19 @@ TESTEXEC = test
 # Object files
 OBJECTS = global.o prompt.o read_input.o message.o var_table.o\
 hash_map.o job_control.o preprocessor.o tokenizer.o expansion.o\
-parser.o
+parser.o built_in.o echo.o
 # Main object
 MAINOBJ = main.o
 # Test main object
 TESTMAINOBJ = main.test.o
 # Source files
-SOURCES	= main.c main.test.c global.c prompt.c read_input.c message.c\
+SOURCES	= main.c global.c prompt.c read_input.c message.c\
 var_table.c hash_map.c job_control.c preprocessor.c tokenizer.c expansion.c\
-parser.c
+parser.c built_in.c
 # Headers
 HEADERS = global.h prompt.h read_input.h message.h var_table.h\
 hash_map.h job_control.h preprocessor.h tokenizer.h expansion.h\
-parser.h
+parser.h built_in.h
 
 debug: OPTIONS += -Wall -g
 debug: all
@@ -60,3 +60,4 @@ preprocessor.o: preprocessor.h
 tokenizer.o: preprocessor.h preprocessor.c
 expansion.o: preprocessor.h tokenizer.h
 parser.o: tokenizer.h expansion.h job_control.h
+echo.o: built_in.h built_in.c

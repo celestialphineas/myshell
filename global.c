@@ -65,6 +65,8 @@ void init()
     push_environ_to_var_table();
     // Push arguments to the variable table
     push_arg_to_var_table();
+    // Init built-in function table
+    init_built_in_table();
     return;
 }
 
