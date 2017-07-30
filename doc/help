@@ -1,10 +1,10 @@
 myshell
 Usage: myshell [options] script ...
 GNU options:
-        --help      Show this help file
-        --version   Show version
+    --help      Show this help file
+    --version   Show version
 Shell options:
-        -i          Run in interactive mode
+    -i          Run in interactive mode
 help:
-        usage: help [built-in commands]
-        help is used to show help information of the built-in commands
+    Usage: help [built-in commands]
+    help is used to show help information of the built-in commands

@@ -84,7 +84,7 @@ Finally...
 ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
 已放弃 (核心已转储)
 ```
-
+- `getumask` 这个Unix函数在Linux上并没有实现。
 - ⁄(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄
 
 对，让我们好好梳理一下shell做了什么？┑(￣Д ￣)┍（以bash为例，参考*Bash Reference Manual*）

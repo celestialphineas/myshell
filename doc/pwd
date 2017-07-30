@@ -1,0 +1,4 @@
+pwd: pwd
+    Print the current working directory.
+
+    No more options are supported in myshell.

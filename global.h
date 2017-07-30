@@ -12,7 +12,9 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include "var_table.h"
 #include "built_in.h"
 #include "preprocessor.h"

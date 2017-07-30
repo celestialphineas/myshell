@@ -1,0 +1,7 @@
+echo: echo [Arguments...]
+    Write arguments to the standard output.
+
+    myshell does not support options of echo.
+    A newline is always appended,
+    and shell expansions are always done before this function call.
+    No backslash escapes are interpretated by this built-in.

@@ -1,0 +1,5 @@
+cd: cd [Directory]
+    Change current working directory.
+
+    Change the current working directory of myshell.
+    No options defined by bash are implemented in myshell.

@@ -11,6 +11,7 @@ static int exit_(int argc, char **argv);
 static int help_(int argc, char **argv);
 static int cd_(int argc, char **argv);
 static int pwd_(int argc, char **argv);
+static int umask_(int argc, char **argv);
 
 HashMap *built_in_table;
 
@@ -33,6 +34,7 @@ void init_built_in_table()
     push_function("help", help_);
     push_function("cd", cd_);
     push_function("pwd", pwd_);
+    push_function("umask", umask_);
     return;
 }
 
@@ -124,11 +126,23 @@ static int cd_(int argc, char **argv)
     }
 }
 
-
 static int pwd_(int argc, char **argv)
 {
     char buffer[MAX_PATH_LEN];
     getcwd(buffer, MAX_COMMAND_LEN);
     printf("%s\n", buffer);
+    return 0;
+}
+
+static int umask_(int argc, char **argv)
+{
+    mode_t mask = umask(0);
+    umask(mask);
+    if(argc >= 2)
+    {
+        sscanf(argv[1], "%u", &mask);
+        umask(mask);
+    }
+    printf("%04u\n", mask);
     return 0;
 }
