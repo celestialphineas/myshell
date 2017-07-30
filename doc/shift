@@ -1,0 +1,4 @@
+shift: shift
+    Shift myshell positional parameter by one slot.
+
+    No arguments are taken for this built-in.

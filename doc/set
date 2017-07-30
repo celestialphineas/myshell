@@ -1,0 +1,5 @@
+set: set [Arguments...]
+    Set myshell global positional parameters.
+
+    Change the value of myshell positional parameters.
+    No other options are supported by myshell.

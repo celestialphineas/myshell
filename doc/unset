@@ -1,0 +1,11 @@
+unset: unset [Variables...]
+    Unset the variables with names given.
+
+    Example:
+        myshell> a=blablabla
+        myshell> echo $a
+        blablabla
+        myshell> unset a
+        myshell> echo $a
+
+        myshell>

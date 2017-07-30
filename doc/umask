@@ -1,0 +1,8 @@
+umask: umask [UMASK]
+    Show or set umask of the current directory.
+
+    No more options are supported in myshell.
+
+    Example:
+        myshell> umask      - Print the umask of current working directory.
+        myshell> umask 777  - Set the umask of current working directory 0777.
