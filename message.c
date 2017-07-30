@@ -1,20 +1,17 @@
+#include <wait.h>
 #include "message.h"
-#include "wait.h"
+#include "global.h"
 
 void print_docs(const char *filename)
 {
     char path[MAX_PATH_LEN];
-    path[0] = 0;
+    strcpy(path, MYSHELL_PATH);
+    strcat(path, "/");
     strcat(path, DOC_PATH);
     strcat(path, filename);
-    if(access(DOC_PATH, R_OK))
-    {
-        puts("Cannot find the documentation path.");
-        puts("Please check if myshell is correctly installed.");
-    }
     if(access(path, R_OK))
     {
-        printf("Undocumented \"%s\"\n", filename);
+        printf("myshell: Undocumented \"%s\"\n", filename);
     }
     else
     {

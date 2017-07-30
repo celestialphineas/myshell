@@ -227,6 +227,7 @@ static void execute_script()
             launch_job(job, FORGROUND);
             clean_up_jobs();
         }
+        clean_up_jobs();
     }
     return;
 }
