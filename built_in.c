@@ -32,6 +32,7 @@ void init_built_in_table()
     push_function("exit", exit_);
     push_function("help", help_);
     push_function("cd", cd_);
+    push_function("pwd", pwd_);
     return;
 }
 
@@ -121,4 +122,13 @@ static int cd_(int argc, char **argv)
         push_environ_to_var_table();
         return 0;
     }
+}
+
+
+static int pwd_(int argc, char **argv)
+{
+    char buffer[MAX_PATH_LEN];
+    getcwd(buffer, MAX_COMMAND_LEN);
+    printf("%s\n", buffer);
+    return 0;
 }
