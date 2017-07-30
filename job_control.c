@@ -427,13 +427,13 @@ void launch_job(Job *j, ForegroundBoolean foreground)
                     p->state = STOPPED;
                     p->status_value = WIFSTOPPED(status);
                     j->state = STOPPED;
-                    LATEST_STATUS = status;
                     break;
                 }
                 else
                 {
                     p->state = COMPLETED;
                     p->status_value = status;
+                    LATEST_STATUS = status;
                 }
             }
             else
@@ -614,19 +614,16 @@ void refresh_pipeline_status(Process *p)
             {
                 p->state = COMPLETED;
                 p->status_value = status;
-                LATEST_STATUS = status;
             }
             else if(WIFSTOPPED(status))
             {
                 p->state = STOPPED;
                 p->status_value = status;
-                LATEST_STATUS = status;
             }
             else
             {
                 p->state = COMPLETED;
                 p->status_value = status;
-                LATEST_STATUS = status;
             }
         }
     }
@@ -778,7 +775,6 @@ void fg_job(Job *j)
                     {
                         p->state = STOPPED;
                         p->status_value = WIFSTOPPED(status);
-                        LATEST_STATUS = status;
                         j->state = STOPPED;
                         restore_control();
                         return;
@@ -787,7 +783,6 @@ void fg_job(Job *j)
                     {
                         p->state = COMPLETED;
                         p->status_value = status;
-                        LATEST_STATUS = status;
                     }
                 }
             }
@@ -847,7 +842,6 @@ void sigchld_handler(int signum)
     if(p)
     {
         p->status_value = status;
-        LATEST_STATUS = status;
         if(WIFSTOPPED(status)) p->state = STOPPED;
         else p->state = COMPLETED;
     }

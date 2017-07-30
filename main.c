@@ -34,7 +34,6 @@ int main(int argc, char **argv)
         int found_background = 0;
         Job *job;
 
-
         while(!is_complete_command(command))
         {
             char *cat = prompt2_read();
@@ -52,6 +51,11 @@ int main(int argc, char **argv)
 
         if(separated) free(separated);
         separated = separate_commands(command, &cmdc);
+        if(!separated)
+        {
+            print_myshell_err("Syntax error, no job is created.");
+            continue;
+        }
         job = command_to_job(separated[0], &found_background);
         if(job)
         {

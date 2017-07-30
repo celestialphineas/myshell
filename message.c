@@ -1,4 +1,5 @@
 #include "message.h"
+#include "wait.h"
 
 void print_docs(const char *filename)
 {
@@ -17,8 +18,13 @@ void print_docs(const char *filename)
     }
     else
     {
-        execl("/bin/cat", "cat", path, NULL);
+        int status;
+        pid_t forked = fork();
+        if(!forked) execl("/bin/cat", "cat", path, NULL);
+        else if(forked == -1) exit(1);
+        else wait(&status);
     }
+    puts("");
     return;
 }
 

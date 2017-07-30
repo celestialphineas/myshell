@@ -139,12 +139,25 @@ void push_environ_to_var_table()
         memcpy(key_buffer, *p, equal_index);
         key_buffer[equal_index] = 0;
         rest = strlen(*p) - equal_index;
-        *(var.elev) = (char*)malloc(rest * sizeof(char));
+        *(var.elev) = (char*)malloc((rest + 1) * sizeof(char));
         if(!*var.elev) exit(MEM_ALLOC_ERR_);
         memcpy(*var.elev, *p + equal_index + 1, rest);
         (*var.elev)[rest] = 0;
         update_variable(key_buffer, &var);
         p++;
+    }
+    // Get the current working directory
+    {
+        Variable var;
+        char buffer[MAX_PATH_LEN];
+        if(getcwd(buffer, MAX_PATH_LEN) == NULL) exit(ENVIRONMENT_FAULT_);
+        var.elec = 1;
+        var.elev = (char**)malloc(sizeof(char*));
+        if(!var.elev) exit(MEM_ALLOC_ERR_);
+        *(var.elev) = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+        if(!*var.elev) exit(MEM_ALLOC_ERR_);
+        strcpy(*var.elev, buffer);
+        update_variable("PWD", &var);
     }
     return;
 }

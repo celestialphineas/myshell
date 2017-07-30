@@ -90,6 +90,14 @@ int is_myshell_argv(char *str)
     return 0;
 }
 
+int is_latest_status(char *str)
+{
+    if(!str || !*str) return 0;
+    if(str[0] == '$' && str[1] == '?')
+        return 1;
+    return 0;
+}
+
 // $[digit]
 int is_myshell_arg(char *str)
 {
@@ -185,6 +193,20 @@ char *expand_myshell_argv(char *dollar_pos, char **end_pos)
     }
     // Remove the last space
     if(*buffer) buffer[strlen(buffer) - 1] = 0;
+    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    if(!result) exit(MEM_ALLOC_ERR_);
+    strcpy(result, buffer);
+    *end_pos = dollar_pos + 1;
+    return result;
+}
+
+char *expand_latest_status(char *dollar_pos, char **end_pos)
+{
+    char buffer[MAX_HOSTNAME_LEN] = {};
+    char *result;
+
+    if(!dollar_pos || !end_pos) return NULL;
+    sprintf(buffer, "%d", LATEST_STATUS);
     result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
     if(!result) exit(MEM_ALLOC_ERR_);
     strcpy(result, buffer);
@@ -356,6 +378,7 @@ char *var_expansion(char *str)
                 strcat(buffer, expanded);
                 i = strlen(buffer);
                 p = next_p;
+                free(expanded);
                 continue;
             }
             else if(is_myshell_argv(p))
@@ -374,6 +397,26 @@ char *var_expansion(char *str)
                 strcat(buffer, expanded);
                 i = strlen(buffer);
                 p = next_p;
+                free(expanded);
+                continue;
+            }
+            else if(is_latest_status(p))
+            {
+                char *next_p;
+                char *expanded = expand_latest_status(p, &next_p);
+                if(!expanded)
+                {
+                    char err_info[MAX_HOSTNAME_LEN] = {};
+                    strcpy(err_info, "Expansion error (Unknown latest status): ");
+                    strncat(err_info, p, 4);
+                    strcat(err_info, "... ");
+                    print_myshell_err(err_info);
+                    return NULL;
+                }
+                strcat(buffer, expanded);
+                i = strlen(buffer);
+                p = next_p;
+                free(expanded);
                 continue;
             }
             else if(is_myshell_arg(p))
@@ -392,6 +435,7 @@ char *var_expansion(char *str)
                 strcat(buffer, expanded);
                 i = strlen(buffer);
                 p = next_p;
+                free(expanded);
                 continue;
             }
             else if(is_myshell_unbraced_var(p))
@@ -410,6 +454,7 @@ char *var_expansion(char *str)
                 strcat(buffer, expanded);
                 i = strlen(buffer);
                 p = next_p;
+                free(expanded);
                 continue;
             }
             else if(is_myshell_var(p))
@@ -428,6 +473,7 @@ char *var_expansion(char *str)
                 strcat(buffer, expanded);
                 i = strlen(buffer);
                 p = next_p;
+                free(expanded);
                 continue;
             }
             // Else simply output the string

@@ -8,9 +8,13 @@ char *get_pwd()
 {
     // For more info about this system function,
     // read "man getenv"
-    char *result = getenv("PWD");
-    if(!result) exit(ENVIRONMENT_FAULT_);
-    else return result;
+    char buffer[MAX_PATH_LEN];
+    char *result;
+    if(getcwd(buffer, MAX_COMMAND_LEN) == NULL) exit(ENVIRONMENT_FAULT_);
+    result = (char*)malloc((strlen(buffer) + 1) * sizeof(char));
+    if(!result) exit(MEM_ALLOC_ERR_);
+    strcpy(result, buffer);
+    return result;
 }
 
 char *get_pwd_replaced()
@@ -35,6 +39,7 @@ char *get_pwd_replaced()
     }
     // End of the string
     replaced[j] = 0;
+    free(pwd);
     return replaced;
 }
 
