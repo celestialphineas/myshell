@@ -366,7 +366,14 @@ void launch_job(Job *j, ForegroundBoolean foreground)
             p->next->fd_stdin = little_pipe[0];
         }
         // If not a built-in, fork
-        if(!is_built_in(p->argv[0])) forked = fork();
+        if(!is_built_in(p->argv[0]))
+        {
+            char parent[MAX_PATH_LEN];
+            strcpy(parent, MYSHELL_PATH);
+            strcat(parent, "/myshell");
+            setenv("PARENT", parent, 1);
+            forked = fork();
+        }
         else
         {
             init_built_in(p);
@@ -757,6 +764,7 @@ void fg_job(Job *j)
         }
         else if(p->state == UNSTARTED)
         {
+            pid_t forked;
             int little_pipe[2];
             // Handle pipe
             if(p->is_pipe && p->next)
@@ -771,7 +779,19 @@ void fg_job(Job *j)
                 // The input end of the pipe
                 p->next->fd_stdin = little_pipe[0];
             }
-            pid_t forked = fork();
+            if(!is_built_in(p->argv[0]))
+            {
+                char parent[MAX_PATH_LEN];
+                strcpy(parent, MYSHELL_PATH);
+                strcat(parent, "/myshell");
+                setenv("PARENT", parent, 1);
+                forked = fork();
+            }
+            else
+            {
+                init_built_in(p);
+                continue;
+            }
             // Child process
             if(!forked)
             {
