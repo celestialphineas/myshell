@@ -20,12 +20,19 @@
 #include "expansion.h"
 #include "parser.h"
 
+static void interactive_loop();
 static void handle_args(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
     handle_args(argc, argv);
     init();
+    interactive_loop();
+    return 0;
+}
+
+static void interactive_loop()
+{
     while(1)
     {
         char *command = prompt1_read();
@@ -69,7 +76,7 @@ int main(int argc, char **argv)
         }
         clean_up_jobs();
     }
-    return 0;
+    return;
 }
 
 static void handle_args(int argc, char **argv)

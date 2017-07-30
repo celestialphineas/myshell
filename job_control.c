@@ -230,21 +230,21 @@ static void restore_std()
 {
     if(dup_stdin != -1)
     {
-        close(STDIN_FILENO);
+        fflush(stdin);
         dup2(dup_stdin, STDIN_FILENO);
         close(dup_stdin);
         dup_stdin = -1;
     }
     if(dup_stdout != -1)
     {
-        close(STDOUT_FILENO);
+        fflush(stdout);
         dup2(dup_stdout, STDOUT_FILENO);
         close(dup_stdout);
         dup_stdout = -1;
     }
     if(dup_stderr != -1)
     {
-        close(STDERR_FILENO);
+        fflush(stderr);
         dup2(dup_stderr, STDERR_FILENO);
         close(dup_stderr);
         dup_stderr = -1;
@@ -269,19 +269,16 @@ void init_built_in(Process *p)
     // Set the files, for pipes and redirections
     if(p->fd_stdin != STDIN_FILENO)
     {
-        close(STDIN_FILENO);
         dup2(p->fd_stdin, STDIN_FILENO);
         close(p->fd_stdin);
     }
     if(p->fd_stdout != STDOUT_FILENO)
     {
-        close(STDOUT_FILENO);
         dup2(p->fd_stdout, STDOUT_FILENO);
         close(p->fd_stdout);
     }
     if(p->fd_stderr != STDERR_FILENO)
     {
-        close(STDERR_FILENO);
         dup2(p->fd_stderr, STDERR_FILENO);
         close(p->fd_stderr);
     }
@@ -293,11 +290,12 @@ void init_built_in(Process *p)
         if(!built_in)
         {
             print_myshell_err("An internal error of some built-in occurs. ");
-            exit(BUILT_IN_RUNTIME_ERR);
+            exit(BUILT_IN_RUNTIME_ERR_);
         }
         // run!
         p->status_value = (*built_in)(p->argc, p->argv);
         LATEST_STATUS = p->status_value;
+        p->state = COMPLETED;
     }
     return;
 }
@@ -539,7 +537,7 @@ void clean_up_jobs()
             job_notify(j);
         }
         // Delete this if notified
-        if(j->notified)
+        if(j->state == COMPLETED && j->notified)
         {
             j->process_list = destruct_process_pipeline(j->process_list);
             free(j->command); j->command = NULL;
@@ -590,11 +588,11 @@ void refresh_pipeline_status(Process *p)
     if(!p) return;
     for(; p; p = p->next)
     {
-        if(p->state == UNSTARTED || p->state == STOPPED)
+        if(p->state == UNSTARTED)
         {
             // Temporary status number to receive the status changes from
             // function waitpid
-            int status;
+            int status = 0;
             // Return value of waitpid,
             // Return 0 if the process is still ongoing
             // Return the pid if the process is done
@@ -605,14 +603,24 @@ void refresh_pipeline_status(Process *p)
             if(pid == -1)
             {
                 // The process is running
-                if(!kill(pid, 0))
+                if(WIFSTOPPED(status))
+                {
+                    p->state = STOPPED;
+                    p->status_value = status;
+                }
+                else if(!kill(pid, 0))
                     p->state = RUNNING;
                 else // The process does not exist, i.e. terminated
                     p->state = COMPLETED;
             }
             else if(pid == 0)
             {
-                if(!kill(pid, 0))
+                if(WIFSTOPPED(status))
+                {
+                    p->state = STOPPED;
+                    p->status_value = status;
+                }
+                else if(!kill(pid, 0))
                     p->state = RUNNING;
                 else
                 {
@@ -698,10 +706,10 @@ void fg_job(Job *j)
             break;
         }
         if(p->state == COMPLETED) continue;
-        if(p->state == STOPPED)
+        else if(p->state == STOPPED)
         {
             // If failed to kill
-            if(!kill(-p->pid, SIGCONT))
+            if(kill(-p->pid, SIGCONT))
             {
                 print_myshell_err("Error when sending SIGCONT to a process group.");
                 j->state = COMPLETED;
@@ -719,8 +727,35 @@ void fg_job(Job *j)
                 j->state = STOPPED;
                 break;
             }
+            else
+            {
+                p->state = COMPLETED;
+                p->status_value = status;
+                j->state = RUNNING;
+                break;
+            }
         }
-        if(p->state == UNSTARTED)
+        else if(p->state == RUNNING)
+        {
+            int status;
+            // pid_t pid;
+            /*pid = */waitpid(p->pid, &status, WUNTRACED);
+            // If the job is stopped, stop the whole pipeline
+            if(WIFSTOPPED(status))
+            {
+                p->state = STOPPED;
+                p->status_value = WIFSTOPPED(status);
+                j->state = STOPPED;
+                restore_control();
+                return;
+            }
+            else
+            {
+                p->state = COMPLETED;
+                p->status_value = status;
+            }
+        }
+        else if(p->state == UNSTARTED)
         {
             int little_pipe[2];
             // Handle pipe
@@ -822,7 +857,7 @@ void bg_job(Job *j)
         if(p->state == COMPLETED) continue;
         if(p->state == STOPPED)
         {
-            if(!kill(-p->pid, SIGCONT))
+            if(kill(-p->pid, SIGCONT))
             {
                 print_myshell_err("Error when sending SIGCONT to a process group.");
                 j->state = COMPLETED;
@@ -834,6 +869,8 @@ void bg_job(Job *j)
             init_child_process(p, &j->pgid, BACKGROUND);
         }
     }
+    j->state = RUNNING;
+    j->notified = false;
     return;
 }
 

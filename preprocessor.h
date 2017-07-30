@@ -18,8 +18,8 @@
 #ifndef MEM_ALLOC_ERR_
 #define MEM_ALLOC_ERR_          3
 #endif
-#ifndef BUILT_IN_RUNTIME_ERR
-#define BUILT_IN_RUNTIME_ERR    11
+#ifndef BUILT_IN_RUNTIME_ERR_
+#define BUILT_IN_RUNTIME_ERR_   11
 #endif
 #ifndef MAX_COMMAND_LEN
 #define MAX_COMMAND_LEN         16384

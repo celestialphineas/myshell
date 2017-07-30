@@ -1,0 +1,4 @@
+fg: fg [Job ID]
+    Put job to foreground.
+
+    Return status: return 1 if failed

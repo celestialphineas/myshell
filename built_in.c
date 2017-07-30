@@ -15,6 +15,9 @@ static int umask_(int argc, char **argv);
 static int set_(int argc, char **argv);
 static int unset_(int argc, char **argv);
 static int shift_(int argc, char **argv);
+static int jobs_(int argc, char **argv);
+static int fg_(int argc, char **argv);
+static int bg_(int argc, char **argv);
 
 HashMap *built_in_table;
 
@@ -41,6 +44,9 @@ void init_built_in_table()
     push_function("set", set_);
     push_function("unset", unset_);
     push_function("shift", shift_);
+    push_function("jobs", jobs_);
+    push_function("fg", fg_);
+    push_function("bg", bg_);
     return;
 }
 
@@ -271,3 +277,101 @@ static int shift_(int argc, char **argv)
     return 0;
 }
 
+static int jobs_(int argc, char **argv)
+{
+    extern Job *job_list;
+    Job *j;
+    
+    if(!argv || argc <= 0)
+    {
+        print_myshell_err("jobs: argument error. ");
+        return 1;
+    }
+
+    clean_up_jobs();
+    for(j = job_list; j; j = j->next)
+    {
+        refresh_job_status(j);
+        printf("[%d]", j->job_number);
+        switch(j->state)
+        {
+            case UNSTARTED: printf("+\tUnstarted"); break;
+            case COMPLETED: 
+                printf("-\tCompleted");
+                j->notified = true;
+                break;
+            case STOPPED: printf("+\tStopped"); break;
+            case RUNNING: printf("-\tRunning"); break;
+            default: break;
+        }
+        printf("\t\t%s\n", j->command);
+    }
+
+    return 0;
+}
+
+static int fg_(int argc, char **argv)
+{
+    int job_number = -1;
+    Job *j;
+
+    if(!argv || argc <= 0)
+    {
+        print_myshell_err("fg: argument error. ");
+        return 1;
+    }
+    if(argc == 1)
+    {
+        print_myshell_err("fg: Input a job ID. ");
+        return 1;
+    }
+
+    sscanf(argv[1], "%d", &job_number);
+
+    j = find_job_by_id(job_number);
+    if(!j)
+    {
+        char err_info[MAX_HOSTNAME_LEN];
+
+        strcpy(err_info, "fg: ");
+        strcat(err_info, argv[1]);
+        strcat(err_info, ": No such job. ");
+        print_myshell_err(err_info);
+        return 1;
+    }
+    fg_job(j);
+    return 0;
+}
+
+static int bg_(int argc, char **argv)
+{
+    int job_number = -1;
+    Job *j;
+
+    if(!argv || argc <= 0)
+    {
+        print_myshell_err("bg: argument error. ");
+        return 1;
+    }
+    if(argc == 1)
+    {
+        print_myshell_err("bg: Input a job ID. ");
+        return 1;
+    }
+
+    sscanf(argv[1], "%d", &job_number);
+
+    j = find_job_by_id(job_number);
+    if(!j)
+    {
+        char err_info[MAX_HOSTNAME_LEN];
+
+        strcpy(err_info, "bg: ");
+        strcat(err_info, argv[1]);
+        strcat(err_info, ": No such job. ");
+        print_myshell_err(err_info);
+        return 1;
+    }
+    bg_job(j);
+    return 0;
+}
