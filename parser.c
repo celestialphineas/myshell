@@ -161,8 +161,8 @@ static boolean is_std_fd(const Token *token)
 {
     if(!token) return false;
     if(token->type != SQUOTED
-    || token->type != DQUOTED
-    || token->type != UNQUOTED)
+    && token->type != DQUOTED
+    && token->type != UNQUOTED)
         return false;
     if(strlen(token->value) != 1) return false;
     if(token->value[0] >= '0' && token->value[1] <= '2') return true;
@@ -395,10 +395,10 @@ Process *read_in_process(Token ***ptokenv, int *ptokenc, int *found_bg)
                 return NULL;
             }
             if(i > 0)
-            if(is_std_fd(tokenv[i - 1]) && tokenv[i - 1]->value[0] == '2')
+            if(is_std_fd(tokenv[i - 1]))
             {
                 used[i - 1] = true;
-                rd_stderr = 1;
+                if(tokenv[i - 1]->value[0] == '2') rd_stderr = 1;
             }
             if(rd_stderr)
             {

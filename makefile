@@ -23,11 +23,11 @@ HEADERS = global.h prompt.h read_input.h message.h var_table.h\
 hash_map.h job_control.h preprocessor.h tokenizer.h expansion.h\
 parser.h built_in.h
 
-debug: OPTIONS += -Wall -g
-debug: all
-
 release: OPTIONS += -Wall
 release: all
+
+debug: OPTIONS += -Wall -g
+debug: all
 
 test: OPTIONS += -Wall -g
 test: $(OBJECTS) $(TESTMAINOBJ)

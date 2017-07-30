@@ -5,8 +5,11 @@
 void print_docs(const char *filename)
 {
     char path[MAX_PATH_LEN];
-    strcpy(path, MYSHELL_PATH);
-    strcat(path, "/");
+    if(MYSHELL_PATH)
+    {
+        strcpy(path, MYSHELL_PATH);
+        strcat(path, "/");
+    }
     strcat(path, DOC_PATH);
     strcat(path, filename);
     if(access(path, R_OK))
