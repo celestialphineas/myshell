@@ -9,7 +9,7 @@ TESTEXEC = test
 # Object files
 OBJECTS = global.o prompt.o read_input.o message.o var_table.o\
 hash_map.o job_control.o preprocessor.o tokenizer.o expansion.o\
-parser.o built_in.o echo.o
+parser.o built_in.o
 # Main object
 MAINOBJ = main.o
 # Test main object

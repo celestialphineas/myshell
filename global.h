@@ -36,6 +36,7 @@ typedef int boolean;
 #define VAR_HASH_TABLE_ERR_     8
 #define BUILT_IN_HASH_ERR_      9
 #define PROCESS_CREATE_ERR_     10
+#define BUILT_IN_RUNTIME_ERR_   11
 
 // Prompt style
 // ============

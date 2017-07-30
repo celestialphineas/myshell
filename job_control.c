@@ -1,5 +1,7 @@
 #include "job_control.h"
 
+extern int LATEST_STATUS;
+
 // The restore signals procedure is written for the child processes
 static void restore_signals();
 // The restore control procedure is written for the parent process
@@ -165,7 +167,6 @@ Process *create_process(int argc_, char **argv_,
 }
 
 // This function is called in the forked process
-// TODO: Handle the built-in functions
 void init_child_process(Process *p, pid_t *pgid, ForegroundBoolean foreground)
 {
     if(!p) return;
@@ -209,6 +210,96 @@ void init_child_process(Process *p, pid_t *pgid, ForegroundBoolean foreground)
     }
     // Execute command
     execvp(p->argv[0], p->argv);
+}
+
+// These are used to store the standard input and outputs
+static int dup_stdin = -1;
+static int dup_stdout = -1;
+static int dup_stderr = -1;
+static void save_std()
+{
+    if(dup_stdin == -1)
+        dup_stdin = dup(STDIN_FILENO);
+    if(dup_stdout == -1)
+        dup_stdout = dup(STDOUT_FILENO);
+    if(dup_stderr == -1)
+        dup_stderr = dup(STDERR_FILENO);
+    return;
+}
+static void restore_std()
+{
+    if(dup_stdin != -1)
+    {
+        close(STDIN_FILENO);
+        dup2(dup_stdin, STDIN_FILENO);
+        close(dup_stdin);
+        dup_stdin = -1;
+    }
+    if(dup_stdout != -1)
+    {
+        close(STDOUT_FILENO);
+        dup2(dup_stdout, STDOUT_FILENO);
+        close(dup_stdout);
+        dup_stdout = -1;
+    }
+    if(dup_stderr != -1)
+    {
+        close(STDERR_FILENO);
+        dup2(dup_stderr, STDERR_FILENO);
+        close(dup_stderr);
+        dup_stderr = -1;
+    }
+    return;
+}
+
+// Handle the built-ins
+void init_built_in(Process *p)
+{
+    if(!p) return;
+    if(p->argc == 0 || !p->argv || !p->argv[0]) return;
+    // The behavior of the built-ins are always the same
+    // No matter myshell is running in interactive mode or not
+    // And have nothing to do with the fg/bg status
+    p->pid = MYSHELL_PID;
+    // No need to set the terminal controling process group
+    // Restore the signals
+    restore_signals();
+    // Save the std I/O
+    save_std();
+    // Set the files, for pipes and redirections
+    if(p->fd_stdin != STDIN_FILENO)
+    {
+        close(STDIN_FILENO);
+        dup2(p->fd_stdin, STDIN_FILENO);
+        close(p->fd_stdin);
+    }
+    if(p->fd_stdout != STDOUT_FILENO)
+    {
+        close(STDOUT_FILENO);
+        dup2(p->fd_stdout, STDOUT_FILENO);
+        close(p->fd_stdout);
+    }
+    if(p->fd_stderr != STDERR_FILENO)
+    {
+        close(STDERR_FILENO);
+        dup2(p->fd_stderr, STDERR_FILENO);
+        close(p->fd_stderr);
+    }
+    // Execute command
+    // For this part, see built_in.h for usage
+    {
+        BuiltIn *built_in;
+        built_in = get_built_in(p->argv[0]);
+        if(!built_in)
+        {
+            print_myshell_err("An internal error of some built-in occurs. ");
+            exit(BUILT_IN_RUNTIME_ERR);
+        }
+        // run!
+        p->status_value = (*built_in)(p->argc, p->argv);
+        LATEST_STATUS = p->status_value;
+    }
+    return;
 }
 
 Process *destruct_process_pipeline(Process *p)
@@ -276,7 +367,13 @@ void launch_job(Job *j, ForegroundBoolean foreground)
             // The input end of the pipe
             p->next->fd_stdin = little_pipe[0];
         }
-        forked = fork();
+        // If not a built-in, fork
+        if(!is_built_in(p->argv[0])) forked = fork();
+        else
+        {
+            init_built_in(p);
+            continue;
+        }
         // Child process
         if(!forked)
         {
@@ -362,6 +459,7 @@ void launch_job(Job *j, ForegroundBoolean foreground)
     // To turn off the foreground notification
     if(!INTERACTIVE_MODE || foreground)
             j->notified = true;
+    restore_std();
     restore_control();
 }
 

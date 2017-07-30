@@ -1,0 +1,6 @@
+exit: exit [n]
+    Exit shell
+
+    Exit shell with status number N, if N is ommited, exit 0 by default.
+    Bash specifies the default exit status as the latest return status of
+    commands, but myshell do the different.

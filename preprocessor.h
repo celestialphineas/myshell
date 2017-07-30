@@ -14,20 +14,24 @@
 #include <string.h>
 #include "message.h"
 
+// See global.h for detailed definitions
 #ifndef MEM_ALLOC_ERR_
-#define MEM_ALLOC_ERR_ 3
+#define MEM_ALLOC_ERR_          3
+#endif
+#ifndef BUILT_IN_RUNTIME_ERR
+#define BUILT_IN_RUNTIME_ERR    11
 #endif
 #ifndef MAX_COMMAND_LEN
-#define MAX_COMMAND_LEN 16384
+#define MAX_COMMAND_LEN         16384
 #endif
 #ifndef MAX_HOSTNAME_LEN
-#define MAX_HOSTNAME_LEN 64
+#define MAX_HOSTNAME_LEN        64
 #endif
 #ifndef MAX_COMMAND_LINES
-#define MAX_COMMAND_LINES 16384
+#define MAX_COMMAND_LINES       16384
 #endif
 #ifndef MAX_TOKEN_NUM
-#define MAX_TOKEN_NUM 1024
+#define MAX_TOKEN_NUM           1024
 #endif
 #ifndef true
 #define true    (1)

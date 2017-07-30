@@ -6,6 +6,7 @@
 #ifndef CELPHI_BUILT_IN_H
 #define CELPHI_BUILT_IN_H
 #include "hash_map.h"
+#include "message.h"
 
 #ifndef true
 #define true    (1)

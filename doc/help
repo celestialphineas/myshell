@@ -5,3 +5,6 @@ GNU options:
         --version   Show version
 Shell options:
         -i          Run in interactive mode
+help:
+        usage: help [built-in commands]
+        help is used to show help information of the built-in commands
