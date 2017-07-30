@@ -105,7 +105,8 @@ char *remove_comments(char *input)
             }
             continue;
         }
-        if(*p == '#')
+        if((p == input && *p == '#')
+        || (p > input && *p == '#' && p[-1] != '$' && p[-1] != '{'))
         {
             in_comment = 1;
             continue;
