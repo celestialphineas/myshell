@@ -270,4 +270,4 @@ static int shift_(int argc, char **argv)
     }
     return 0;
 }
-    
+

@@ -85,9 +85,9 @@ Process *create_process(int argc_, char **argv_,
         // {
             int fd;
             if(append_out_)
-                fd = open(out_file, O_WRONLY|O_CREAT|O_APPEND);
+                fd = open(out_file, O_WRONLY|O_CREAT|O_APPEND, 0666);
             else
-                fd = open(out_file, O_WRONLY|O_CREAT);
+                fd = open(out_file, O_WRONLY|O_CREAT, 0666);
             new_process->fd_stdout = fd;
         // }
     }
@@ -127,9 +127,9 @@ Process *create_process(int argc_, char **argv_,
             // If appending mode is on
             // Use different open mode to write the file
             if(append_err_)
-                fd = open(err_file, O_WRONLY|O_CREAT|O_APPEND);
+                fd = open(err_file, O_WRONLY|O_CREAT|O_APPEND, 0666);
             else
-                fd = open(err_file, O_WRONLY|O_CREAT);
+                fd = open(err_file, O_WRONLY|O_CREAT, 0666);
             new_process->fd_stderr = fd;
         }
     }
