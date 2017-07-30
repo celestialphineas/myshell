@@ -36,8 +36,7 @@ void init()
     handle_myshell_signals();
 
     // Initialize myshell pid
-    if(INTERACTIVE_MODE)
-        MYSHELL_PID = getpid();
+    MYSHELL_PID = getpid();
     // If failed to get the pid
     if(MYSHELL_PID < 0)  exit(PID_FAILURE_);
     // Set process group ID
@@ -73,21 +72,19 @@ void init()
 static void handle_myshell_signals()
 {
     // Take over the signals if myshell is running in interactive mode
-    if(INTERACTIVE_MODE)
-    {
-        // Key board interrupt (^C)
-        signal(SIGINT, SIG_IGN);
-        // Quit (^Q)
-        signal(SIGQUIT, SIG_IGN);
-        // Terminal stop (^Z)
-        signal(SIGTSTP, SIG_IGN);
-        // Read from terminal
-        signal(SIGTTIN, SIG_IGN);
-        // Write to terminal
-        signal(SIGTTOU, SIG_IGN);
-        // Child process signal handler
-        signal(SIGCHLD, sigchld_handler);
-    }
+    
+    // Key board interrupt (^C)
+    signal(SIGINT, SIG_IGN);
+    // Quit (^Q)
+    signal(SIGQUIT, SIG_IGN);
+    // Terminal stop (^Z)
+    signal(SIGTSTP, SIG_IGN);
+    // Read from terminal
+    signal(SIGTTIN, SIG_IGN);
+    // Write to terminal
+    signal(SIGTTOU, SIG_IGN);
+    // Child process signal handler
+    signal(SIGCHLD, sigchld_handler);
 }
 
 static char *create_hostname()
@@ -110,13 +107,11 @@ static char *create_hostname()
 static void grab_term_ctrl()
 {
     // Take over the terminal if myshell is running in interactive mode
-    if(INTERACTIVE_MODE)
-    {
-        // Set the forground process group ID
-        tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
-        // Get the state of FD and put it in TERM_ATTR
-        tcgetattr(MYSHELL_TERM_IN, &TERM_ATTR);
-    }
+
+    // Set the forground process group ID
+    tcsetpgrp(MYSHELL_TERM_IN, MYSHELL_PID);
+    // Get the state of FD and put it in TERM_ATTR
+    tcgetattr(MYSHELL_TERM_IN, &TERM_ATTR);
 }
 
 void push_environ_to_var_table()
