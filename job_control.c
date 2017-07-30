@@ -612,8 +612,13 @@ void refresh_pipeline_status(Process *p)
             }
             else if(pid == 0)
             {
-                p->state = COMPLETED;
-                p->status_value = status;
+                if(!kill(pid, 0))
+                    p->state = RUNNING;
+                else
+                {
+                    p->state = COMPLETED;
+                    p->status_value = status;
+                }
             }
             else if(WIFSTOPPED(status))
             {

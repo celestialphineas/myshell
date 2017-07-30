@@ -60,7 +60,10 @@ int main(int argc, char **argv)
         if(job)
         {
             if(found_background)
+            {
                 launch_job(job, BACKGROUND);
+                printf("[%d]-\t%d\n", job->job_number, job->pgid);
+            }
             else
                 launch_job(job, FORGROUND);
         }

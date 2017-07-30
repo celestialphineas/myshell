@@ -10,6 +10,7 @@ static int echo_(int argc, char **argv);
 static int exit_(int argc, char **argv);
 static int help_(int argc, char **argv);
 static int cd_(int argc, char **argv);
+static int pwd_(int argc, char **argv);
 
 HashMap *built_in_table;
 
