@@ -197,7 +197,7 @@ static void execute_script()
         int cmdc;
         int i;
 
-        fgets(buffer, MAX_COMMAND_LEN, opened);
+        if(!fgets(buffer, MAX_COMMAND_LEN, opened)) return;
 
         // myshell provides a feature to allow users to input a command 
         // in multiple lines

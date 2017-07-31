@@ -33,13 +33,16 @@ test: OPTIONS += -Wall -g
 test: $(OBJECTS) $(TESTMAINOBJ)
 	$(CC) -o $(TESTEXEC) $(TESTMAINOBJ) $(OBJECTS)
 
-all: $(OBJECTS) $(MAINOBJ)
+help: message.h message.o help.c
+	$(CC) -o help $(OBJECTS) help.c
+
+all: $(OBJECTS) $(MAINOBJ) help
 	$(CC) -o $(EXECUTABLE) $(MAINOBJ) $(OBJECTS)
 
 # make clean
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) $(MAINOBJ) $(TESTMAINOBJ) $(EXECUTABLE) $(TESTEXEC) *.gch
+	rm -f $(OBJECTS) $(MAINOBJ) $(TESTMAINOBJ) $(EXECUTABLE) $(TESTEXEC) *.gch help
 
 # All files in this project heavily rely on global.h
 %.o: %.c global.h
