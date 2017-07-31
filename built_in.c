@@ -18,6 +18,7 @@ static int shift_(int argc, char **argv);
 static int jobs_(int argc, char **argv);
 static int fg_(int argc, char **argv);
 static int bg_(int argc, char **argv);
+static int continue_(int argc, char **argv);
 
 HashMap *built_in_table;
 
@@ -35,6 +36,7 @@ void init_built_in_table()
         built_in_table
             = create_hash_map(INIT_BUILT_IN_SIZE_SCALE, BKDR_hash);
     if(!built_in_table) exit(BUILT_IN_HASH_ERR_);
+    // Push the following built-in functions to the hash table.
     push_function("echo", echo_);
     push_function("exit", exit_);
     push_function("help", help_);
@@ -47,6 +49,7 @@ void init_built_in_table()
     push_function("jobs", jobs_);
     push_function("fg", fg_);
     push_function("bg", bg_);
+    push_function("continue", continue_);
     return;
 }
 
@@ -374,4 +377,9 @@ static int bg_(int argc, char **argv)
     }
     bg_job(j);
     return 0;
+}
+
+static int continue_(int argc, char **argv)
+{
+    return 0x5f5f5f5f;
 }
