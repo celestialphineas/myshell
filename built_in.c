@@ -19,6 +19,7 @@ static int jobs_(int argc, char **argv);
 static int fg_(int argc, char **argv);
 static int bg_(int argc, char **argv);
 static int continue_(int argc, char **argv);
+static int exec_(int argc, char **argv);
 
 HashMap *built_in_table;
 
@@ -50,6 +51,7 @@ void init_built_in_table()
     push_function("fg", fg_);
     push_function("bg", bg_);
     push_function("continue", continue_);
+    push_function("exec", exec_);
     return;
 }
 
@@ -382,4 +384,19 @@ static int bg_(int argc, char **argv)
 static int continue_(int argc, char **argv)
 {
     return 0x5f5f5f5f;
+}
+
+static int exec_(int argc, char **argv)
+{
+    if(!argv || argc <= 0)
+    {
+        print_myshell_err("exec: argument error. ");
+        return 1;
+    }
+    // Print error info
+    if(execvp(argv[1], argv + 1) != 0)
+    {
+        print_myshell_err("exec: Cannot find the program you call. ");
+    }
+    return 1;
 }

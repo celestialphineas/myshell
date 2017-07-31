@@ -1,0 +1,4 @@
+exec: exec [Executive] [Arguments...]
+    Executive command to overlay myshell.
+
+    No arguments are supported for this command.
